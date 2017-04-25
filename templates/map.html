@@ -23,16 +23,13 @@
         <!-- Nav tabs -->
         <div class="sidebar-tabs">
             <ul role="tablist">
-                <li><a href="#home" role="tab"><i class="fa fa-bars"></i></a></li>
-                <li><a href="#profile" role="tab"><i class="fa fa-user"></i></a></li>
-                <li class="disabled"><a href="#messages" role="tab"><i class="fa fa-envelope"></i></a></li>
+                <li><a href="#home" role="tab"><i class="fa fa-home"></i></a></li>
+                <li id="link-to-airport-list"><a href="#chosen-airports" role="tab"><i class="fa fa-list"></i></a></li>
             </ul>
-
             <ul role="tablist">
                 <li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>
             </ul>
         </div>
-
         <!-- Tab panes -->
         <div class="sidebar-content">
             <div class="sidebar-pane" id="home">
@@ -44,16 +41,22 @@
                   <p>Click on a marker to show all your nearby airports!</p>
                 </div>
             </div>
-            <div class="sidebar-pane" id="profile">
-                <h1 class="sidebar-header">Profile<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+            <div class="sidebar-pane" id="chosen-airports">
+                <h1 class="sidebar-header">List of Selected Airports<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+                <table id="chosen-list" class="table">
+                  <tr>
+                    <td>Choose some airports by clicking on the markers!</td>
+                  </tr>
+                </table>
             </div>
         </div>
     </div>
     <div id="map" class="sidebar-map"></div>
     <script>
-    data = {{pois|tojson|safe}};
+    let data = {{pois|tojson|safe}};
     console.log(data);
     console.log('{{data_size}}');
+    let storedAirports = [];
 
     var styles = [
       {
@@ -115,20 +118,39 @@
      }
 
      function makeInfoWindowEvent(map, infowindow, contentString, marker, index) {
-       google.maps.event.addListener(marker, 'click', function() {
-         infowindow.setContent(contentString);
-         infowindow.open(map, marker);
-         $("#airport-list").empty();
-         let curr = $("#airport-list").append("<p><h1>Nearby Airports</h1></p>");
-         for (let i = 0; i < data[index]['nearbyAirports'].length; ++i) {
-           curr.append('<p class="btn btn-default airport" style="width: 100%; margin-bottom: 10px;">'+
-                          data[index]['nearbyAirports'][i]['name'] +
-                          "<br>Distance: " + data[index]['nearbyAirports'][i]['distance'] +
-                       "</p>");
-         }
-         openSidebar();
-       });
-     }
+      google.maps.event.addListener(marker, 'click', function() {
+        infowindow.setContent(contentString);
+        infowindow.open(map, marker);
+        $("#airport-list").empty();
+        let curr = $("#airport-list").append("<p><h1>Nearby Airports</h1></p>");
+        for (let i = 0; i < data[index]['nearbyAirports'].length; ++i) {
+        let a = $('<p></p>', {
+          'html': data[index]['nearbyAirports'][i]['name'] +
+                  "<br>Distance: " +
+                  data[index]['nearbyAirports'][i]['distance']
+          });
+          a.attr("class", "btn btn-default airport");
+          a.attr("style", "width: 100%; margin-bottom: 10px;");
+          a.data("airport-name", data[index]['nearbyAirports'][i]['name']);
+          if (storedAirports.includes(a.data("airport-name"))) {
+            a.addClass("active");
+          }
+          a.on('click', function() {
+            if ($(this).hasClass("active")) {
+              storedAirports = storedAirports.filter((elem) => {
+                return elem !== $(this).data("airport-name")
+              })
+              $(this).removeClass("active");
+            } else {
+              storedAirports.push($(this).data("airport-name"));
+              $(this).addClass("active")
+            }
+          });
+          a.appendTo(curr);
+        }
+        openSidebar();
+      });
+    }
     </script>
     <script async defer
             src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBk8DYJ1upiRa73zodMzFiJkINmEl-HocY&signed_in=true&libraries=visualization&callback=initMap">
@@ -139,8 +161,22 @@
     <script>
       var sidebar = null;
       $(document).ready(function() {
-        console.log('hello!')
         sidebar = $('#sidebar').sidebar();
+        $("#link-to-airport-list").on('click', function() {
+          $("#chosen-list").empty();
+          for (let i = 0; i < storedAirports.length; ++i) {
+            let cross = $('<td><i class="fa fa-times" style="cursor:pointer;" aria-hidden="true"></i><td>')
+            cross.on('click', function() {
+              $(this).parent().remove();
+              storedAirports = storedAirports.filter((elem) => {
+                return elem !== storedAirports[i];
+              })
+            })
+            let tablerow = $("<tr><td>" + storedAirports[i] + "</td></tr>");
+            tablerow.append(cross)
+            tablerow.appendTo($("#chosen-list"))
+          }
+        })
       })
       function openSidebar() {
         if (sidebar !== null) {
