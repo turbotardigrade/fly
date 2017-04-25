@@ -37,21 +37,15 @@ def upload_file():
       if not file:
          flash('Problems with uploaded file')
          return redirect(request.url)
-      
-      filename = shortuuid.uuid()
-      filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-      file.save(filepath)
-      
-      pois = location_analyzer.analyze(filepath)
+
+      raw_data = ''.join(file.stream.readlines())
+      pois = location_analyzer.analyze(raw_data)
       return render_template('map.html', pois=pois)
 
    # Default
    return render_template('upload.html')
 
 if __name__ == "__main__":
-   if not os.path.exists(app.config['UPLOAD_FOLDER']):
-      os.makedirs(app.config['UPLOAD_FOLDER'])
-    
    app.secret_key = 'It was the best of times, it was the worst of times'
    app.config['SESSION_TYPE'] = 'filesystem'
 

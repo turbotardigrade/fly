@@ -2,10 +2,9 @@ import json
 import numpy as np
 from sklearn import cluster
 
-def analyze(filename):
-    with open(filename) as json_data:
-        data = json.load(json_data)
-        data_size = len(data)
+def analyze(raw_data):
+    data = json.loads(raw_data)
+    data_size = len(data)
     print("# of locations %d" % data_size)
 
     # Binning to reduce the data size
