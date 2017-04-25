@@ -6,3 +6,4 @@ scipy
 scikit_learn==0.18.1
 gevent
 gunicorn
+psycopg2

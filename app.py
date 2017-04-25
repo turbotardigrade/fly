@@ -7,8 +7,10 @@ import json
 import logging
 
 import location_analyzer
+import db
 
 app = Flask(__name__)
+model = db.model(os.environ['PSQL_URI'])
 
 ######################################################################
 ### Constants
@@ -42,6 +44,11 @@ def upload_file():
 
       raw_data = ''.join(file.stream.readlines())
       pois, data_size = location_analyzer.analyze(raw_data)
+
+      for i, poi in enumerate(pois):
+         lat, lon = poi['position']['lat'], poi['position']['lng']
+         pois[i]['nearbyAirports'] = model.getNearestAirports(lat, lon)
+      
       return render_template('map.html', pois=pois, data_size=data_size)
 
    # Default
