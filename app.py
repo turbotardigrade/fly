@@ -1,18 +1,20 @@
-import logging
-import sys
-import os
 from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
-import shortuuid
+
+import sys
+import os
 import json
+import logging
+
 import location_analyzer
 
-ALLOWED_EXTENSIONS = set(['json'])
-
 app = Flask(__name__)
+
+######################################################################
+### Constants
+
+ALLOWED_EXTENSIONS = set(['json'])
 app.config['UPLOAD_FOLDER'] = 'upload/'
-app.logger.addHandler(logging.StreamHandler(sys.stdout))
-app.logger.setLevel(logging.ERROR)
 
 def allowed_file(filename):
    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -39,8 +41,8 @@ def upload_file():
          return redirect(request.url)
 
       raw_data = ''.join(file.stream.readlines())
-      pois = location_analyzer.analyze(raw_data)
-      return render_template('map.html', pois=pois)
+      pois, data_size = location_analyzer.analyze(raw_data)
+      return render_template('map.html', pois=pois, data_size=data_size)
 
    # Default
    return render_template('upload.html')
@@ -48,5 +50,9 @@ def upload_file():
 if __name__ == "__main__":
    app.secret_key = 'It was the best of times, it was the worst of times'
    app.config['SESSION_TYPE'] = 'filesystem'
+
+   # This is needed to log errors to heroku
+   app.logger.addHandler(logging.StreamHandler(sys.stdout))
+   app.logger.setLevel(logging.ERROR)
 
    app.run(debug=True)

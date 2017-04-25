@@ -53,4 +53,4 @@ def analyze(raw_data):
     for r in result:
         print("position: {0}, label: {1}".format(r["label"], r["position"]))
 
-    return result
+    return result, data_size
