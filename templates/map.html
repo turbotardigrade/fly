@@ -122,15 +122,18 @@
         infowindow.setContent(contentString);
         infowindow.open(map, marker);
         $("#airport-list").empty();
-        let curr = $("#airport-list").append("<p><h1>Nearby Airports</h1></p>");
+        let curr = $("#airport-list").append('<p><h1 style="text-align: center;">Nearby Airports</h1></p>');
+        data[index]['nearbyAirports'].sort(function(a, b) {
+          return a['distance'] - b['distance']
+        });
         for (let i = 0; i < data[index]['nearbyAirports'].length; ++i) {
-        let a = $('<p></p>', {
-          'html': data[index]['nearbyAirports'][i]['name'] +
-                  "<br>Distance: " +
-                  data[index]['nearbyAirports'][i]['distance']
+          let a = $('<p></p>', {
+            'html': data[index]['nearbyAirports'][i]['name'] +
+                    "<br>Distance: " +
+                    data[index]['nearbyAirports'][i]['distance']
           });
           a.attr("class", "btn btn-default airport");
-          a.attr("style", "width: 100%; margin-bottom: 10px;");
+          a.attr("style", "width: 100%; margin-bottom: 10px; white-space: normal");
           a.data("airport-name", data[index]['nearbyAirports'][i]['name']);
           if (storedAirports.includes(a.data("airport-name"))) {
             a.addClass("active");
