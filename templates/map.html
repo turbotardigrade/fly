@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Simple markers</title>
+    <style>
+     html, body {
+         height: 100%;
+         margin: 0;
+         padding: 0;
+     }
+     #map {
+         height: 100%;
+     }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+
+     data = {{pois|tojson|safe}}
+
+     var styles = [
+       {
+	 stylers: [
+	   { hue: "#00ffe6" },
+	   { saturation: -20 }
+	 ]
+       },{
+	 featureType: "road",
+	 elementType: "geometry",
+	 stylers: [
+	   { lightness: 100 },
+	   { visibility: "simplified" }
+	 ]
+       },{
+	 featureType: "road",
+	 elementType: "labels",
+	 stylers: [
+	   { visibility: "off" }
+	 ]
+       }
+     ];
+     
+     function initMap() {
+       new google.maps.StyledMapType(styles, {name: "Styled Map"});
+       
+       var map = new google.maps.Map(document.getElementById('map'), {
+	 zoom: 4,
+	 center: data[0].position
+       });
+       map.setOptions({styles: styles});
+
+       var infowindow = new google.maps.InfoWindow();
+
+       data.forEach(function(elem) {
+	 var marker = new google.maps.Marker({
+	   position: elem.position,
+	   map: map,
+	   title: elem.label
+	 });
+
+	 makeInfoWindowEvent(map, infowindow, ""+elem.label, marker);
+       });
+
+       var heatMapData = []
+
+       data.forEach(function(elem) {
+	 heatMapData.push({
+	   location: new google.maps.LatLng(elem.position.lat, elem.position.lng),
+	   weight: elem.label
+	 });
+       });
+
+       var heatmap = new google.maps.visualization.HeatmapLayer({
+	 data: heatMapData,
+	 radius: 30
+       });
+       heatmap.setMap(map);
+     }
+
+     function makeInfoWindowEvent(map, infowindow, contentString, marker) {
+       google.maps.event.addListener(marker, 'click', function() {
+	 infowindow.setContent(contentString);
+	 infowindow.open(map, marker);
+       });
+     }
+
+    </script>
+    <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBk8DYJ1upiRa73zodMzFiJkINmEl-HocY&signed_in=true&libraries=visualization&callback=initMap">
+    </script>
+  </body>
+</html>
