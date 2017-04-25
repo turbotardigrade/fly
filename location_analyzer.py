@@ -9,8 +9,8 @@ def analyze(raw_data):
 
     # Binning to reduce the data size
     # Bin size roughly correspond to half a day worth of data
-    bin_size = 100
-    bin_total = data_size/bin_size + 1
+    bin_size = 1
+    bin_total = data_size/bin_size
     locations = [(0,0)]*(bin_total)
 
     for bin_number in xrange(bin_total):
@@ -19,7 +19,7 @@ def analyze(raw_data):
             loc_number = bin_number*bin_size+i
             if loc_number >= data_size:
                 break
-            
+
             loc = data[loc_number]
             lat, lon, i = lat+int(loc[0]), lon+int(loc[1]), i+1
 

@@ -9,7 +9,7 @@ import logging
 import location_analyzer
 import db
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 model = db.model(os.environ['PSQL_URI'])
 
 ######################################################################
@@ -21,6 +21,13 @@ app.config['UPLOAD_FOLDER'] = 'upload/'
 def allowed_file(filename):
    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@app.route("/static/<path:path>")
+def get_static(path):
+    """
+    Endpoint that serves static files
+    """
+    return send_from_directory('static', path)
+
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
    if request.method == 'POST':
@@ -28,7 +35,7 @@ def upload_file():
       if 'file' not in request.files:
          flash('No file part')
          return redirect(request.url)
-      
+
       file = request.files['file']
       if file.filename == '':
          flash('No selected file')
@@ -37,7 +44,7 @@ def upload_file():
       if not allowed_file(file.filename):
          flash('Filetype not allowed')
          return redirect(request.url)
-      
+
       if not file:
          flash('Problems with uploaded file')
          return redirect(request.url)
@@ -48,7 +55,7 @@ def upload_file():
       for i, poi in enumerate(pois):
          lat, lon = poi['position']['lat'], poi['position']['lng']
          pois[i]['nearbyAirports'] = model.getNearestAirports(lat, lon)
-      
+
       return render_template('map.html', pois=pois, data_size=data_size)
 
    # Default

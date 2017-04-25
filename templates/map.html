@@ -14,84 +14,128 @@
          height: 100%;
      }
     </style>
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/gmaps-sidebar.css" />
   </head>
   <body>
-    <div id="map"></div>
+    <div id="sidebar" class="sidebar collapsed">
+        <!-- Nav tabs -->
+        <div class="sidebar-tabs">
+            <ul role="tablist">
+                <li><a href="#home" role="tab"><i class="fa fa-bars"></i></a></li>
+                <li><a href="#profile" role="tab"><i class="fa fa-user"></i></a></li>
+                <li class="disabled"><a href="#messages" role="tab"><i class="fa fa-envelope"></i></a></li>
+            </ul>
+
+            <ul role="tablist">
+                <li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>
+            </ul>
+        </div>
+
+        <!-- Tab panes -->
+        <div class="sidebar-content">
+            <div class="sidebar-pane" id="home">
+                <h1 class="sidebar-header">
+                    Flight Portal
+                    <span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+                </h1>
+                <div id="airport-list">
+                  <p>Click on a marker to show all your nearby airports!</p>
+                </div>
+            </div>
+            <div class="sidebar-pane" id="profile">
+                <h1 class="sidebar-header">Profile<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+            </div>
+        </div>
+    </div>
+    <div id="map" class="sidebar-map"></div>
     <script>
+    data = {{pois|tojson|safe}};
+    console.log(data);
+    console.log('{{data_size}}');
 
-     data = {{pois|tojson|safe}};
-     console.log(data);
-     console.log('{{data_size}}');
-
-     var styles = [
+    var styles = [
+      {
+        stylers: [
+          { hue: "#00ffe6" },
+          { saturation: -20 }
+        ]
+      },
+      {
+        featureType: "road",
+        elementType: "geometry",
+        stylers: [
+          { lightness: 100 },
+          { visibility: "simplified" }
+        ]
+       },
        {
-	 stylers: [
-	   { hue: "#00ffe6" },
-	   { saturation: -20 }
-	 ]
-       },{
-	 featureType: "road",
-	 elementType: "geometry",
-	 stylers: [
-	   { lightness: 100 },
-	   { visibility: "simplified" }
-	 ]
-       },{
-	 featureType: "road",
-	 elementType: "labels",
-	 stylers: [
-	   { visibility: "off" }
-	 ]
+         featureType: "road",
+         elementType: "labels",
+         stylers: [
+           { visibility: "off" }
+         ]
        }
      ];
-     
+
      function initMap() {
        new google.maps.StyledMapType(styles, {name: "Styled Map"});
-       
        var map = new google.maps.Map(document.getElementById('map'), {
-	 zoom: 4,
-	 center: data[0].position
+         zoom: 4,
+         center: data[0].position
        });
        map.setOptions({styles: styles});
-
        var infowindow = new google.maps.InfoWindow();
-
+       let index = 0
        data.forEach(function(elem) {
-	 var marker = new google.maps.Marker({
-	   position: elem.position,
-	   map: map,
-	   title: elem.label
-	 });
-
-	 makeInfoWindowEvent(map, infowindow, ""+elem.label, marker);
+         var marker = new google.maps.Marker({
+           position: elem.position,
+           map: map,
+           title: elem.label + ""
+         });
+         makeInfoWindowEvent(map, infowindow, ""+elem.label, marker, index);
+         ++index;
        });
 
        var heatMapData = []
 
        data.forEach(function(elem) {
-	 heatMapData.push({
-	   location: new google.maps.LatLng(elem.position.lat, elem.position.lng),
-	   weight: elem.label
-	 });
+         heatMapData.push({
+           location: new google.maps.LatLng(elem.position.lat, elem.position.lng),
+           weight: elem.label
+         });
        });
 
        var heatmap = new google.maps.visualization.HeatmapLayer({
-	 data: heatMapData,
-	 radius: 30
+         data: heatMapData,
+         radius: 30
        });
        heatmap.setMap(map);
      }
 
-     function makeInfoWindowEvent(map, infowindow, contentString, marker) {
+     function makeInfoWindowEvent(map, infowindow, contentString, marker, index) {
        google.maps.event.addListener(marker, 'click', function() {
-	 infowindow.setContent(contentString);
-	 infowindow.open(map, marker);
+         infowindow.setContent(contentString);
+         infowindow.open(map, marker);
+         $("#airport-list").empty();
+         let curr = $("#airport-list").append("<p><h1>Nearby Airports</h1></p>");
+         for (let i = 0; i < data[index]['nearbyAirports'].length; ++i) {
+           curr.append("<p>"+ data[index]['nearbyAirports'][i]['name'] +
+                       "<br>Distance: " + data[index]['nearbyAirports'][i]['distance'] + "</p>");
+         }
        });
      }
-
     </script>
     <script async defer
             src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBk8DYJ1upiRa73zodMzFiJkINmEl-HocY&signed_in=true&libraries=visualization&callback=initMap">
+    </script>
+    <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="/static/js/jquery-sidebar.min.js"></script>
+    <script>
+      $(document).ready(function() {
+        console.log('hello!')
+        var sidebar = $('#sidebar').sidebar();
+      })
     </script>
   </body>
 </html>
