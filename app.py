@@ -1,3 +1,5 @@
+import logging
+import sys
 import os
 from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
@@ -9,6 +11,8 @@ ALLOWED_EXTENSIONS = set(['json'])
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'upload/'
+app.logger.addHandler(logging.StreamHandler(sys.stdout))
+app.logger.setLevel(logging.ERROR)
 
 def allowed_file(filename):
    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
