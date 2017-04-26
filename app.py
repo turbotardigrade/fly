@@ -71,7 +71,14 @@ def upload_location():
    # render templatee
    for i, poi in enumerate(pois):
       lat, lon = poi['position']['lat'], poi['position']['lng']
-      pois[i]['nearbyAirports'] = model.getNearestAirports(lat, lon)
+      nearest = model.getNearestAirports(lat, lon)
+
+      if poi['label'] > 30:
+         for j in xrange(len(nearest)):
+            nearest[j]['is_home'] = True
+
+      print nearest
+      pois[i]['nearbyAirports'] = nearest
 
    return render_template('map.html', pois=pois, data_size=data_size)
 
