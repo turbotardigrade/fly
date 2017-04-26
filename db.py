@@ -27,7 +27,7 @@ FROM
 (SELECT airports.iata as iata,
        airports.name as name,
        airport_rankings.rank as rank,
-       St_distance(airport_spatial.location, St_makepoint(3.139003, 101.686855)::geography)::int as distance
+        St_distance(airport_spatial.location, St_makepoint(%(lat)s, %(lon)s)::geography)::int as distance
 FROM   airports
 
 INNER JOIN airport_spatial
@@ -36,7 +36,7 @@ INNER JOIN airport_spatial
 JOIN airport_rankings
      ON airports.IATA = airport_rankings.IATA
 
-        WHERE airports.IATA != '' AND St_distance(airport_spatial.location, St_makepoint(%(lat)s, %(lon)s)::geography)::int < 500000
+        WHERE airports.IATA != '' AND St_distance(airport_spatial.location, St_makepoint(%(lat)s, %(lon)s)::geography)::int < 300000
 
 ORDER BY distance
 LIMIT 5) as t1
