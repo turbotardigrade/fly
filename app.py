@@ -29,9 +29,19 @@ def get_static(path):
     """
     return send_from_directory('static', path)
 
-@app.route('/', methods=['GET', 'POST'])
-def upload_file():
-   if request.method == 'POST':
+@app.route('/', methods=['GET'])
+def home():
+   return render_template('upload.html')
+ 
+@app.route('/', methods=['POST'])
+def upload_location():
+   raw_data = ''
+
+   # get location data
+   if request.form['use_example'] == "1":
+      file = open('./data/example_locations.json', 'r')
+      raw_data = ''.join(file.readlines())
+   else:
       # check if the post request has the file part
       if 'file' not in request.files:
          flash('No file part')
@@ -51,16 +61,17 @@ def upload_file():
          return redirect(request.url)
 
       raw_data = ''.join(file.stream.readlines())
-      pois, data_size = location_analyzer.analyze(raw_data)
 
-      for i, poi in enumerate(pois):
-         lat, lon = poi['position']['lat'], poi['position']['lng']
-         pois[i]['nearbyAirports'] = model.getNearestAirports(lat, lon)
+   # analyze location data to get Points of Interests and their
+   # probabilities
+   pois, data_size = location_analyzer.analyze(raw_data)
 
-      return render_template('map.html', pois=pois, data_size=data_size)
+   # render templatee
+   for i, poi in enumerate(pois):
+      lat, lon = poi['position']['lat'], poi['position']['lng']
+      pois[i]['nearbyAirports'] = model.getNearestAirports(lat, lon)
 
-   # Default
-   return render_template('upload.html')
+   return render_template('map.html', pois=pois, data_size=data_size)
 
 @app.route('/airlines', methods=['GET'])
 def list_airlines():

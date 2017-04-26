@@ -14,10 +14,17 @@
   {% endwith %}
   
   <h1>Upload new File</h1>
-  <form method=post enctype=multipart/form-data>
-    <p><input type=file name=file>
-      <input type=submit value=Upload>
-    </p
+  <form method="post" enctype="multipart/form-data">
+    <p>
+      <input type="file" name="file">
+      <input type="submit" value="Upload">
+    </p>
+  </form>
+
+  <form method="post">
+    <p>
+      <button type="submit" name="use_example" value="1">Use example data</button>
+    </p>
   </form>
 </body>
 </html>
