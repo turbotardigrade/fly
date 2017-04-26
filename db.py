@@ -54,3 +54,27 @@ ORDER BY airport_rankings.rank, St_distance(location, St_makepoint(%(lat)s, %(lo
             res.append(it)
 
         return res
+
+    def getAirlineReviews(self, iata):
+        cur = self.conn.cursor()
+        cur.execute("""
+
+SELECT content, helpful_percentage, rating
+FROM flightdiary_airline_comments
+WHERE airline_id = (SELECT id FROM flightdiary_airlines WHERE iata = %(iata)s LIMIT 1)
+ORDER BY helpful_percentage DESC
+LIMIT 10;
+
+        """, {'iata':iata})
+
+        rows = cur.fetchall()
+        res = []
+        for row in rows:
+            it = {}
+            it['content'] = row[0]
+            it['helpful_percentage'] = row[1]
+            it['rating'] = row[2]
+            it['from'] = 'flightdiary'
+            res.append(it)
+
+        return res
