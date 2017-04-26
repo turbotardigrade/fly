@@ -5,10 +5,12 @@ import sys
 import os
 import json
 import logging
-
+import urllib
+   
 import location_analyzer
 import suggester
 import db
+import precomputed
 
 app = Flask(__name__, static_url_path='/static')
 model = db.model(os.environ['PSQL_URI'])
@@ -31,7 +33,7 @@ def get_static(path):
 
 @app.route('/', methods=['GET'])
 def home():
-   return render_template('upload.html')
+   return render_template('upload.html', airports=precomputed.airports)
  
 @app.route('/', methods=['POST'])
 def upload_location():
@@ -78,6 +80,14 @@ def list_airlines():
    homes = request.args.get('homes').split(',')
    iatas = request.args.get('IATAs').split(',')
 
+   homes = map(lambda x: urllib.unquote(x).decode('utf8'), homes)
+   iatas = map(lambda x: urllib.unquote(x).decode('utf8'), iatas)
+
+   # Home airports must be in the list
+   for h in homes:
+      if h not in iatas:
+         iatas.append(h)
+         
    resp = {}
    resp['suggestions'] = suggester.get_suggestion(homes, iatas)
    
