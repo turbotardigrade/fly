@@ -5,7 +5,7 @@ import time
 
 from fp_growth import find_frequent_itemsets
 from pprint import pprint
-import multiprocessing as mp
+from timeout import timeout
 
 """Notes:
 
@@ -27,43 +27,36 @@ import multiprocessing as mp
 
 """
 
+######################################################################
+### Initialization
+
 # Preload all transactions to memory
 transactions = []
 with open("./flight_transactions") as f:
     for line in f:
         trans = line.split(",")
         trans = list(set(trans))                             # Remove duplicates
-        # trans = filter(lambda x: airport in x, trans)
         trans = map(lambda x: set(x.split("->")), trans)     # Do not consider direction
         trans = map(lambda x: '-'.join(x), trans)
         transactions.append(trans)
         
-def timeout(func, args = (), kwds = {}, timeout = 1, default = None):
-    pool = mp.Pool(processes = 1)
-    result = pool.apply_async(func, args = args, kwds = kwds)
-    try:
-        val = result.get(timeout = timeout)
-    except mp.TimeoutError:
-        pool.terminate()
-        return default
-    else:
-        pool.close()
-        pool.join()
-        return val
-
 def mine_frequent_set(trans, min_sup):
     # Need to turn generator to list
     return list(find_frequent_itemsets(trans, min_sup, True))
 
 def get_frequent_sets(airport):
-    trans = filter(lambda x: airport in ' '.join(x), transactions)  # Filter out one airport
-    print("Process %s of transactions for %s" % (len(transactions), airport))
+    # Filter out transactions that doesn't have the airport
+    trans = filter(lambda x: airport in ' '.join(x), transactions)
+    
+    print("Process %s of transactions for %s" % (len(trans), airport))
 
     # Obscure data science voodoo
     min_sup = 20+len(trans)/10
     if min_sup > 100:
         min_sup = 100
 
+    # Retry to find frequent sets by increasing min_sup until there is
+    # no timeout nor too many results
     while True:
         res = timeout(mine_frequent_set, args = (trans, min_sup), timeout = 1, default = 'timeout')
         min_sup += 5
@@ -80,34 +73,48 @@ def get_frequent_sets(airport):
 
         if len(result) < 50:
             break
-            
-        print("%s sets found for minimal support of %s, too many, higher support" % (len(result), min_sup))
-
 
     result.sort(key=lambda x: x[1], reverse=True)
-    # pprint(result)
-
-    # print("Done\n")
-    # print("%s frequent sets found with minimal support of %s in %s transactions" % (len(result), round(min_sup, 2), len(trans)))
-
     return result
+
+def __count_matches_in_frequent_set(frequent_set, pairs):
+    counter = 0
+    for s in frequent_set:
+        for a1, a2 in pairs:
+            if a1 in s and a2 in s:
+                counter += 1
+                break
+    return counter
+
+def __generate_suggestion(sets, airports):
+    # split and flatten
+    flat = []
+    for s in sets:
+        flat.extend(s.split('-'))
+
+    suggestions = []
+    for s in flat:
+        if s not in airports:
+            suggestions.append(s)
+
+    return suggestions
 
 def get_suggestion(homes, airports):
     print '\nMatched frequent sets:'
     pairs = list(itertools.combinations(airports, 2))
-    # airports = filter(lambda x: x not in homes, airports)
 
-    res1, res2, res3 = [], [], []
+    relevant_frequent_sets = []
+    suggestion = []
+    
     for h in homes:
+        
+        res1, res2, res3 = [], [], []
+        
         for freq, _ in get_frequent_sets(h):
-            counter = 0
+            counter = __count_matches_in_frequent_set(freq, pairs)
 
-            for s in freq:
-                for a1, a2 in pairs:
-                    if a1 in s and a2 in s:
-                        counter += 1
-                        break
-
+            # Use multiple level of thresholds and later select the
+            # one that has the least sets
             if counter > len(freq)-1:
                 res1.append(freq)
             if counter > len(freq)-2:
@@ -115,5 +122,17 @@ def get_suggestion(homes, airports):
             if counter > len(freq)-3:
                 res2.append(freq)
                 print freq
+                
+        # filter out empty sets
+        res = filter(lambda x: len(x) != 0, (res1, res2, res3))
+        
+        # if has non-empty set, select the one with the smallest number of suggestion
+        if res:
+            min_set = min(res, key=len)[0]
+            relevant_frequent_sets.append(min_set)
+            suggestion.extend(min_set)
 
-    return min(filter(lambda x: len(x) != 0, (res1, res2, res3)), key=len)
+
+    suggestion = __generate_suggestion(suggestion, airports)
+
+    return { 'relevant_frequent_sets': relevant_frequent_sets, 'iatas': suggestion }
