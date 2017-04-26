@@ -1,4 +1,4 @@
-from flask import Flask, flash, request, redirect, url_for, render_template
+from flask import Flask, flash, request, redirect, url_for, render_template, jsonify
 from werkzeug.utils import secure_filename
 
 import sys
@@ -7,6 +7,7 @@ import json
 import logging
 
 import location_analyzer
+import suggester
 import db
 
 app = Flask(__name__, static_url_path='/static')
@@ -60,6 +61,16 @@ def upload_file():
 
    # Default
    return render_template('upload.html')
+
+@app.route('/airlines', methods=['GET'])
+def list_airlines():
+   homes = request.args.get('homes').split(',')
+   iatas = request.args.get('IATAs').split(',')
+
+   resp = {}
+   resp['suggestions'] = suggester.get_suggestion(homes, iatas)
+   
+   return jsonify(resp)
 
 if __name__ == "__main__":
    app.secret_key = 'It was the best of times, it was the worst of times'
