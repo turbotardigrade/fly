@@ -1,0 +1,66 @@
+<!doctype html>
+<head>
+  <title>FlyingTardigrades Flightportal for Frequent Flyers</title>
+  <link rel="stylesheet" type="text/css" href="https://oss.maxcdn.com/semantic-ui/2.0.6/semantic.min.css">
+  <link rel="stylesheet" type="text/css" href="https://oss.maxcdn.com/semantic-ui/2.0.6/components/card.min.css">
+  <link rel="stylesheet" type="text/css" href="https://oss.maxcdn.com/semantic-ui/2.0.6/components/button.min.css">
+
+  <script
+          src="https://code.jquery.com/jquery-3.1.1.min.js"
+          integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+          crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.10/semantic.min.js"></script>
+
+  <style>
+   body {
+       padding: 20px;
+       font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif;
+   }
+   .ui.cards>.card {
+       cursor: pointer;
+   }
+   .ui.cards>.card:hover {
+       background-color: #efefef;
+   }
+   .ui.cards > .create-action.card:hover {
+       background-color: #fff;
+   }
+  </style>
+</head>
+<body>
+
+  <div class="ui container">
+    <h1>{{ code }} - {{ details.name }}</h1>
+
+    <hr />
+    {{ details|safe }}
+    <h2>Reviews:</h2>
+<div class="ui cards">
+    {% for rev in reviews %}
+    <div class="card">
+      <div class="content">
+	<a href="{{rev.url}}"><i class="right floated user icon teal" style="font-size: 30px;"></i></a>
+	<div class="header">
+          <a href="{{rev.url}}">{{ rev.name|safe }}</a>
+	</div>
+	<div class="meta">
+          <code>from {{rev.from}}</code>
+	</div>
+
+	<div class="description">
+	  {{ rev.content }}<br /><br />
+	  @TODO add rating
+	</div>
+      </div>
+      <div class="extra content">
+	<div style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 100%;">
+          <i class="user icon"></i> {{ rev.helpful_percentage }}% found this helpful
+	</div>
+      </div>
+    </div>
+    {% endfor %}
+</div>
+    <hr />
+  </div>
+</body>
+</html>

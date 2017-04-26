@@ -73,11 +73,35 @@ ORDER BY distance;
 
         return res
 
-    def getAirlineReviews(self, iata):
+    def get_airline_data(self, iata):
         cur = self.conn.cursor()
         cur.execute("""
 
-SELECT content, helpful_percentage, rating
+SELECT name, alias, iata, icao, callsign, country, active
+FROM airlines
+WHERE iata = %(iata)s
+LIMIT 1;
+
+        """, {'iata':iata})
+
+        rows = cur.fetchall()
+        row = map(lambda x: unicode(str(x), 'utf-8'), rows[0])
+        it = {}
+        it['name'] = row[0]
+        it['alias'] = row[1]
+        it['iata'] = row[2]
+        it['icao'] = row[3]
+        it['callsign'] = row[4]
+        it['country'] = row[5]
+        it['active'] = row[6]
+
+        return it
+
+    def get_airline_reviews(self, iata):
+        cur = self.conn.cursor()
+        cur.execute("""
+
+SELECT content, helpful_percentage, rating, name, url
 FROM flightdiary_airline_comments
 WHERE airline_id = (SELECT id FROM flightdiary_airlines WHERE iata = %(iata)s LIMIT 1)
 ORDER BY helpful_percentage DESC
@@ -88,11 +112,14 @@ LIMIT 10;
         rows = cur.fetchall()
         res = []
         for row in rows:
+            row = map(lambda x: unicode(str(x), 'utf-8'), row)
             it = {}
             it['content'] = row[0]
             it['helpful_percentage'] = row[1]
             it['rating'] = row[2]
+            it['name'] = row[3]
             it['from'] = 'flightdiary'
+            it['url'] = row[4]
             res.append(it)
 
         return res

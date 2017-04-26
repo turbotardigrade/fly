@@ -95,6 +95,11 @@ def show_airlines():
    iatas = request.args.get('IATAs').split(',')
    return jsonify({'airlines': model.getAirlinesCoveringAirports(iatas)})
 
+@app.route('/airlines/<code>', methods=['GET'])
+def show_airline_details(code):
+   reviews = model.get_airline_reviews(code)
+   details = model.get_airline_data(code)
+   return render_template('airline.html', code=code, reviews=reviews, details=details)
 
 if __name__ == "__main__":
    app.secret_key = 'It was the best of times, it was the worst of times. Turbo-the-tardigrade'
