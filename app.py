@@ -75,8 +75,8 @@ def upload_location():
 
    return render_template('map.html', pois=pois, data_size=data_size)
 
-@app.route('/airlines', methods=['GET'])
-def list_airlines():
+@app.route('/suggestions', methods=['GET'])
+def show_suggestion():
    homes = request.args.get('homes').split(',')
    iatas = request.args.get('IATAs').split(',')
 
@@ -87,16 +87,17 @@ def list_airlines():
    for h in homes:
       if h not in iatas:
          iatas.append(h)
-         
-   resp = {}
-   suggestions = suggester.get_suggestion(homes, iatas)
-   suggestions['airlines'] = model.getAirlinesCoveringAirports(suggestions['iatas'])
-   resp['suggestions'] = suggestions
    
-   return jsonify(resp)
+   return jsonify({'suggestions': suggester.get_suggestion(homes, iatas)})
+
+@app.route('/airlines', methods=['GET'])
+def show_airlines():
+   iatas = request.args.get('IATAs').split(',')
+   return jsonify({'airlines': model.getAirlinesCoveringAirports(iatas)})
+
 
 if __name__ == "__main__":
-   app.secret_key = 'It was the best of times, it was the worst of times'
+   app.secret_key = 'It was the best of times, it was the worst of times. Turbo-the-tardigrade'
    app.config['SESSION_TYPE'] = 'filesystem'
 
    # This is needed to log errors to heroku
