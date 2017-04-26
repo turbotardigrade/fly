@@ -3,33 +3,26 @@ import numpy as np
 from sklearn import cluster
 
 def analyze(raw_data):
-    data = json.loads(raw_data)
+    data = json.loads(raw_data)['locations']
     data_size = len(data)
     print("# of locations %d" % data_size)
 
-    # Binning to reduce the data size
-    # Bin size roughly correspond to half a day worth of data
-    bin_size = 1
-    bin_total = data_size/bin_size
-    locations = [(0,0)]*(bin_total)
+    reduceByFactor = 10
+    locations = [None for _ in xrange(data_size/reduceByFactor+1)]
 
-    for bin_number in xrange(bin_total):
-        i, lat, lon = 0, 0, 0
-        for i in xrange(bin_size):
-            loc_number = bin_number*bin_size+i
-            if loc_number >= data_size:
-                break
+    # Reduce the data size
+    j = 0
+    for i in xrange(0, data_size, reduceByFactor):
+        loc = data[i]
+        lat, lon= int(loc['latitudeE7']), int(loc['longitudeE7'])
+        locations[j] = [lat, lon]
+        j += 1
 
-            loc = data[loc_number]
-            lat, lon, i = lat+int(loc[0]), lon+int(loc[1]), i+1
-
-        lat, lon = lat/i, lon/i
-        locations[bin_number] = [lat, lon]
-    print("Reduced to %d bins" % bin_total)
-
+    locations = filter(lambda x: x is not None, locations)
+        
     # Use K-Mean clustering to get k hotspots
     k = 20
-    kmeans = cluster.KMeans(n_clusters=k, n_jobs=-2) #use all but one cpu
+    kmeans = cluster.KMeans(n_clusters=k, n_jobs=2)
     data = np.array(locations, np.int32)
     kmeans.fit(data)
 

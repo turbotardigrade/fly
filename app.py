@@ -40,7 +40,7 @@ def upload_location():
    raw_data = ''
 
    # get location data
-   if request.form['use_example'] == "1":
+   if len(request.form) != 0 and request.form['use_example'] == "1":
       file = open('./data/example_locations.json', 'r')
       raw_data = ''.join(file.readlines())
    else:
@@ -61,7 +61,7 @@ def upload_location():
       if not file:
          flash('Problems with uploaded file')
          return redirect(request.url)
-
+      
       raw_data = ''.join(file.stream.readlines())
 
    # analyze location data to get Points of Interests and their
