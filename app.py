@@ -89,7 +89,9 @@ def list_airlines():
          iatas.append(h)
          
    resp = {}
-   resp['suggestions'] = suggester.get_suggestion(homes, iatas)
+   suggestions = suggester.get_suggestion(homes, iatas)
+   suggestions['airlines'] = model.getAirlinesCoveringAirports(suggestions['iatas'])
+   resp['suggestions'] = suggestions
    
    return jsonify(resp)
 
