@@ -52,7 +52,7 @@
         <div class="default text">Select Other Airport</div>
         <div class="menu">
 	  {% for airport in airports %}
-	  <div class="item" data-value="{{ airport.iata }}">{{ airport.iata }} - {{ airport.name }}</div>
+	  <div class="item" data-value="{{ airport.iata }}">{{ airport.name }} - {{ airport.iata }}</div>
 	  {% endfor %}
         </div>
       </div>
@@ -60,10 +60,10 @@
       <div class="ui fluid multiple search selection dropdown">
         <input name="IATAs" type="hidden">
         <i class="dropdown icon"></i>
-	<div class="default text">Select Home Airport(s) - your most used airport near to your home</div>
+	  <div class="default text">Select Home Airport(s) - your most used airport near to your home</div>
         <div class="menu">
 	  {% for airport in airports %}
-	  <div class="item" data-value="{{ airport.iata }}">{{ airport.iata }} - {{ airport.name }}</div>
+	  <div class="item" data-value="{{ airport.iata }}">{{ airport.name }} - {{ airport.iata }}</div>
 	  {% endfor %}
         </div>
       </div>
@@ -72,7 +72,13 @@
     </form>
   </div>
   <script>
-      $('.dropdown').dropdown()
+      $('.dropdown').dropdown({
+        duration: 0,
+        minCharacters: 2,
+        label: {
+          duration: 0
+        }
+      })
   </script>
 </body>
 </html>
