@@ -92,12 +92,12 @@ def __generate_suggestion(sets, airports):
     for s in sets:
         flat.extend(s.split('-'))
 
-    suggestions = []
+    suggestions = set()
     for s in flat:
         if s not in airports:
-            suggestions.append(s)
+            suggestions.add(s)
 
-    return suggestions
+    return list(suggestions)
 
 def get_suggestion(homes, airports):
     print '\nMatched frequent sets:'
