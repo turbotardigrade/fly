@@ -22,24 +22,42 @@ class model:
         cur = self.conn.cursor()
         cur.execute("""
 
-SELECT airports.iata,
-       airports.name,
-       airport_rankings.rank,
-        St_distance(airport_spatial.location, St_makepoint(%(lat)s, %(lon)s)::geography) as distance
+SELECT *
+FROM
+(SELECT airports.iata as iata,
+       airports.name as name,
+       airport_rankings.rank as rank,
+       St_distance(airport_spatial.location, St_makepoint(3.139003, 101.686855)::geography)::int as distance
 FROM   airports
 
 INNER JOIN airport_spatial
       ON airports.id = airport_spatial.id 
-      AND St_dwithin(
-      	  airport_spatial.location, 
-	  St_makepoint(%(lat)s, %(lon)s)::geography, 50000)
+
+JOIN airport_rankings
+     ON airports.IATA = airport_rankings.IATA
+
+        WHERE airports.IATA != '' AND St_distance(airport_spatial.location, St_makepoint(%(lat)s, %(lon)s)::geography)::int < 500000
+
+ORDER BY distance
+LIMIT 5) as t1
+UNION
+(SELECT airports.iata as iata,
+       airports.name as name,
+       airport_rankings.rank as rank,
+       St_distance(airport_spatial.location, St_makepoint(%(lat)s, %(lon)s)::geography)::int as distance
+FROM   airports
+
+INNER JOIN airport_spatial
+      ON airports.id = airport_spatial.id 
 
 LEFT JOIN airport_rankings
      ON airports.IATA = airport_rankings.IATA
 
-WHERE airports.IATA is not NULL
+WHERE airports.IATA != ''
+ORDER BY distance
+LIMIT 5)
 
-ORDER BY airport_rankings.rank, St_distance(location, St_makepoint(%(lat)s, %(lon)s) :: geography);
+ORDER BY distance;
 
         """, {'lat': lat, 'lon': lon})
 
