@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Recommended Airlines</title>
+
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.10/semantic.min.css">
+  <script
+      src="https://code.jquery.com/jquery-3.1.1.min.js"
+      integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+      crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.10/semantic.min.js"></script>
+</head>
+<body>
+  <div class="ui container">
+    <h1>Recommended Airlines</h1>
+
+    <div class="ui fluid styled accordion">
+      {% for airline in airlines %}
+      <div class="title">
+        {{ airline }}
+        <i class="dropdown icon"></i>
+        <div class="ui divided horizontal list">
+          <div class="item">
+            {{ airline.iata }}
+          </div>
+          <div class="item">
+            {{ airline.name }}
+          </div>
+          <div class="item">
+            {{ airline.num_routes }}
+          </div>
+          <div class="item">
+            {{ airline.p }}
+          </div>
+        </div>
+      </div>
+      <div class="content">
+        <p>Prices here</p>
+        <div class="ui list">
+          {% for route in airline.routes %}
+        <div class="item">
+          {{ route.origin }}
+          {{ route.destination }}
+          {{ route.minprice }}
+        </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <script>
+    $('.ui.accordion').accordion()
+  </script>
+</body>
+</html>

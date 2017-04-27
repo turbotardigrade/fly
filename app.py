@@ -131,7 +131,7 @@ def show_airlines():
        if airline['iata'] in prices_map:
           airline['routes'] = prices_map[airline['iata']]
 
-    return jsonify({'airlines': airlines})
+    return render_template('airlines.html', airlines=airlines)
 
 @app.route('/airlines/<code>', methods=['GET'])
 def show_airline_details(code):
