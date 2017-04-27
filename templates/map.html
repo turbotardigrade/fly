@@ -84,7 +84,7 @@
             <ul role="tablist">
                 <li><a href="#home" role="tab"><i class="fa fa-home"></i></a></li>
                 <li id="link-to-airport-list"><a href="#chosen-airports" role="tab"><i class="fa fa-list"></i></a></li>
-		<li id="link-to-airport-list"><a href="#suggested" role="tab"><i class="fa fa-hand-o-right"></i></a></li>
+                <li id="link-to-suggested-list"><a href="#suggestions" role="tab"><i class="fa fa-hand-o-right"></i></a></li>
             </ul>
             <ul role="tablist">
                 <li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>
@@ -114,9 +114,11 @@
                     Suggested Airports
                     <span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
                 </h1>
-                <div id="suggested-list">
-                  <p>List of suggestions</p>
-                </div>
+                <table id="suggested-list" class="table">
+                  <tr>
+                    <td>Please select a few more airports by clicking on the markers!</td>
+                  </tr>
+                </table>
             </div>
         </div>
     </div>
@@ -127,6 +129,23 @@
     console.log('{{data_size}}');
 
     let storedAirports = [];
+    let homeAirports = [];
+    for (let i = 0; i < data.length; ++i) {
+      for (let j = 0; j < data[i].nearbyAirports.length; ++j) {
+        if (data[i].nearbyAirports[j].is_home === true) {
+          let is_exist = false;
+          for (let k = 0; k < homeAirports.length; ++k) {
+            if (homeAirports[k].name === data[i].nearbyAirports[j].name) {
+              is_exist = true
+              break;
+            }
+          }
+          if (!is_exist) {
+            homeAirports.push(data[i].nearbyAirports[j]);
+          }
+        }
+      }
+    }
 
      {% if selected %}
      storedAirports = {{selected|tojson|safe}}
@@ -200,16 +219,16 @@
         for (let i = 0; i < data[index]['nearbyAirports'].length; ++i) {
           let a = $('<p></p>', {
             'html': data[index]['nearbyAirports'][i]['IATA'] + ' - '
-		  + data[index]['nearbyAirports'][i]['name']
+                  + data[index]['nearbyAirports'][i]['name']
                   +  "<br /><code>Distance: "
                   + data[index]['nearbyAirports'][i]['distance']
-		  + "</code>"
+                  + "</code>"
           });
           a.attr("class", "btn btn-default airport");
           a.attr("style", "width: 100%; margin-bottom: 10px; white-space: normal");
           a.data("airport-name", data[index]['nearbyAirports'][i]['name']);
-	  a.data("airport-iata", data[index]['nearbyAirports'][i]['IATA']);
-	  a.data("airport-home", data[index]['nearbyAirports'][i]['is_home']);
+          a.data("airport-iata", data[index]['nearbyAirports'][i]['IATA']);
+          a.data("airport-home", data[index]['nearbyAirports'][i]['is_home']);
           if (storedAirports.includes(a.data("airport-name"))) {
             a.addClass("active");
           }
@@ -220,8 +239,8 @@
               })
               $(this).removeClass("active");
             } else {
-	      console.log($(this).data("airport-home"));
-              storedAirports.push({name: $(this).data("airport-name"), iata: $(this).data("airport-iata"), is_home: $(this).data("airport-home")});
+	            console.log($(this).data("airport-home"));
+              storedAirports.push({name: $(this).data("airport-name"), IATA: $(this).data("airport-iata"), is_home: $(this).data("airport-home")});
               $(this).addClass("active")
             }
           });
@@ -251,10 +270,45 @@
                 return elem !== storedAirports[i];
               })
             })
-            let tablerow = $("<tr><td>" + storedAirports[i].iata + "-" + storedAirports[i].name + "</td></tr>");
+            let tablerow = $("<tr><td>" + storedAirports[i].IATA + "-" + storedAirports[i].name + "</td></tr>");
             tablerow.append(cross)
             tablerow.appendTo($("#chosen-list"))
           }
+        })
+        $("#link-to-suggested-list").on('click', function() {
+          let iatas = [];
+          let homes = [];
+          for (let i = 0; i < storedAirports.length; i++) {
+            let item = storedAirports[i]
+            if (!item.is_home) {
+              iatas.push(item.IATA);
+            }
+          }
+          for (let i = 0; i < homeAirports.length; i++) {
+            let item = homeAirports[i];
+            homes.push(item.IATA);
+          }
+          $("#suggested-list").empty();
+          $.get('/airlines', {
+            'other_iatas': iatas.join(),
+            'home_iatas': homes.join()
+          }, function(result) {
+            let airlines = result.airlines;
+            for (let i = 0; i < airlines.length; ++i) {
+              let html = "<tr><td>" + airlines[i].iata + " - " + airlines[i].name + "<br>"
+              if (airlines[i].num_routes) {
+                html += "Number of routes: " + airlines[i].num_routes + "<br>"
+              }
+              if (airlines[i].meandelay) {
+                html += "Mean delay time: " + airlines[i].meandelay + "<br>"
+              }
+              if (airlines[i].p) {
+                html += "P: " + airlines[i].p + "</td></tr>"
+              }
+              let tablerow = $(html);
+              tablerow.appendTo($("#suggested-list"))
+            }
+          })
         })
       })
       function openSidebar() {
@@ -267,19 +321,19 @@
        iatas = [];
        homes = [];
        for (let i=0; i<storedAirports.length; i++) {
-	 let item = storedAirports[i]
-	 if (item.is_home) {
-	   homes.push(item.iata);
-	 } else {
-	   iatas.push(item.iata);
-	 }
-       }
+        let item = storedAirports[i]
+        if (item.is_home) {
+          homes.push(item.IATA);
+        } else {
+          iatas.push(item.IATA);
+        }
+      }
 
-       if (iatas.length + homes.length < 5) {
-	 alert('Please select at least 5 airports!');
-	 return;
-       }
-       window.location.href = '/airlines?other_iatas='+iatas.join()+'&home_iatas='+homes.join();
+      if (iatas.length + homes.length < 5) {
+        alert('Please select at least 5 airports!');
+        return;
+      }
+      window.location.href = '/airlines?other_iatas='+iatas.join()+'&home_iatas='+homes.join();
      }
     </script>
   </body>

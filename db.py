@@ -77,8 +77,10 @@ ORDER BY distance;
         cur = self.conn.cursor()
         cur.execute("""
 
-SELECT name, alias, iata, icao, callsign, country, active
+SELECT open_name, alias, iata, icao, callsign, country, active
 FROM airlines
+INNER JOIN open_normalized_name as normalized_name
+    ON normalized_name.open_name = airlines.name
 WHERE iata = %(iata)s
 LIMIT 1;
 
@@ -186,7 +188,7 @@ WHERE iata IN (%s)
         # therefore we need to match both directions of a quote separately, and use DISTINCT to deduplicate
         # when they happen to be the same carrier
         cur.execute("""
-SELECT DISTINCT prices.origin, prices.destination, prices.minprice, airlines.name, trim(airlines.iata)
+SELECT DISTINCT prices.origin, prices.destination, prices.minprice, normalized.open_name, trim(airlines.iata)
 FROM routes
 INNER JOIN (
   SELECT src, dest FROM routes_unique
@@ -197,6 +199,7 @@ INNER JOIN airlines
 ON routes.airline = airlines.iata
 INNER JOIN sky_open_join
 ON sky_open_join.open_name = airlines.name
+INNER JOIN open_normalized_name as normalized ON normalized.open_name = airlines.name
 INNER JOIN prices
 ON (
   prices.origin = routes.src_airport
