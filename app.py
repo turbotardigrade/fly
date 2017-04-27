@@ -116,7 +116,9 @@ def show_suggestion():
 @app.route('/airlines', methods=['GET'])
 def show_airlines():
    home_iatas, other_iatas = get_airport_params(request)
-   return jsonify({'airlines': model.getAirlinesCoveringAirports(home_iatas, other_iatas)})
+   objs = model.getPricesCoveringAirports(home_iatas, other_iatas)
+   print objs
+   return jsonify({'airlines': objs})
 
 @app.route('/airlines/<code>', methods=['GET'])
 def show_airline_details(code):

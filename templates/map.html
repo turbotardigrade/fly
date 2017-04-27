@@ -84,6 +84,7 @@
             <ul role="tablist">
                 <li><a href="#home" role="tab"><i class="fa fa-home"></i></a></li>
                 <li id="link-to-airport-list"><a href="#chosen-airports" role="tab"><i class="fa fa-list"></i></a></li>
+		<li id="link-to-airport-list"><a href="#suggested" role="tab"><i class="fa fa-hand-o-right"></i></a></li>
             </ul>
             <ul role="tablist">
                 <li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>
@@ -107,6 +108,15 @@
                     <td>Choose some airports by clicking on the markers!</td>
                   </tr>
                 </table>
+            </div>
+            <div class="sidebar-pane" id="suggestions">
+                <h1 class="sidebar-header">
+                    Suggested Airports
+                    <span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+                </h1>
+                <div id="suggested-list">
+                  <p>List of suggestions</p>
+                </div>
             </div>
         </div>
     </div>
@@ -269,7 +279,7 @@
 	 alert('Please select at least 5 airports!');
 	 return;
        }
-       window.location.href = '/airlines?IATAs='+iatas.join()+'&homes='+homes.join();
+       window.location.href = '/airlines?other_iatas='+iatas.join()+'&home_iatas='+homes.join();
      }
     </script>
   </body>

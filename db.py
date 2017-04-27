@@ -198,10 +198,10 @@ ON (
         res = []
         for row in rows:
             it = {}
-            it['origin'] = rows[0]
-            it['destination'] = rows[1]
-            it['minprice'] = str(rows[2])
-            it['airline'] = rows[3]
+            it['origin'] = row[0]
+            it['destination'] = row[1]
+            it['minprice'] = str(row[2])
+            it['airline'] = row[3]
             res.append(it)
 
         return res
