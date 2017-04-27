@@ -5,12 +5,12 @@ import urlparse # import urllib.parse for python 3+
 class model:
     def __init__(self, uri):
         parsed = urlparse.urlparse(uri)
-        
+
         username = parsed.username
         password = parsed.password
         database = parsed.path[1:]
         hostname = parsed.hostname
-        
+
         self.conn = psycopg2.connect(
             database = database,
             user = username,
@@ -31,7 +31,7 @@ FROM
 FROM   airports
 
 INNER JOIN airport_spatial
-      ON airports.id = airport_spatial.id 
+      ON airports.id = airport_spatial.id
 
 JOIN airport_rankings
      ON airports.IATA = airport_rankings.IATA
@@ -48,7 +48,7 @@ UNION
 FROM   airports
 
 INNER JOIN airport_spatial
-      ON airports.id = airport_spatial.id 
+      ON airports.id = airport_spatial.id
 
 LEFT JOIN airport_rankings
      ON airports.IATA = airport_rankings.IATA
@@ -127,13 +127,25 @@ LIMIT 10;
     def getAirlinesCoveringAirports(self, home_iatas, other_iatas):
         cur = self.conn.cursor()
         cur.execute("""
-SELECT airlines.name, t1.iata, t1.num_routes, t1.p
+SELECT t3.normalized_name, t1.iata, t1.num_routes, t1.p, t2.meandelay
 FROM airlines INNER JOIN
-(SELECT routes.airline as iata, count(*) as num_routes, (count(*) * 1.0) / (SELECT count(*) FROM ROUTES_unique WHERE src = ANY(%(home_iatas)s) AND dest = ANY(%(other_iatas)s)) as p
-FROM routes
-WHERE src_airport = ANY(%(home_iatas)s) AND dest_airport = ANY(%(other_iatas)s)
-GROUP BY airline) as t1
-ON t1.iata = airlines.iata
+(
+    SELECT routes.airline as iata, count(*) as num_routes, (count(*) * 1.0) / (SELECT count(*) FROM ROUTES_unique WHERE src = ANY(%(home_iatas)s) AND dest = ANY(%(other_iatas)s)) as p
+    FROM routes
+    WHERE src_airport = ANY(%(home_iatas)s) AND dest_airport = ANY(%(other_iatas)s)
+    GROUP BY airline
+) as t1 ON t1.iata = airlines.iata
+LEFT JOIN
+(
+    SELECT open_name, meandelay
+    FROM
+    (
+        SELECT airline_name, avg(CASE WHEN average_delay_mins = '' THEN 0 ELSE average_delay_mins::float END) as meandelay
+        FROM uk_delay_table
+        GROUP BY airline_name
+    ) a INNER JOIN sky_open_uk_join ON a.airline_name = sky_open_uk_join.uk_name
+) as t2 ON airlines.name = t2.open_name
+INNER JOIN open_normalized_name as t3 ON t3.open_name = airlines.name
 ORDER BY p DESC;
 """, {'home_iatas': home_iatas, 'other_iatas': other_iatas})
 
@@ -145,6 +157,8 @@ ORDER BY p DESC;
             it['iata'] = row[1]
             it['num_routes'] = row[2]
             it['p'] = str(round(row[3] * 100, 2)) + '%'
+            if row[4]:
+                it['meandelay'] = str(round(row[4], 2)) + ' mins'
             res.append(it)
 
         return res
