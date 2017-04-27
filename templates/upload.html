@@ -104,7 +104,7 @@
 
     <div class="card">
       <div class="content">
-        <form action="/map" method="get">
+        <form id="airport_selector" action="/map" method="get">
           <i class="right floated keyboard icon teal" style="font-size: 30px;"></i>
           <div class="header">
             Select airports manually
@@ -136,25 +136,32 @@
               </div>
             </div> <!-- dropdown 2 -->
             <br/>
-          </div> <!-- description -->
+          </div> <!-- extra -->
         </form>
       </div> <!-- content -->
       <div class="extra content">
         <div style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 100%;">
-          <button type="submit">Use selected airports</button>
+          <button id="airport_selector_button" type="submit">Use selected airports</button>
         </div>
-        </form>
       </div> <!-- extra -->
     </div> <!-- card -->
   </div>
 </div>
 <script>
-  $('.ui.dropdown').dropdown({
-    duration: 0,
-    minCharacters: 3,
-    label: {
-      duration: 0
-    }
+  $(document).ready(function () {
+    // settings for our airport search to improve perf
+    $('.ui.dropdown').dropdown({
+      duration: 0,
+      minCharacters: 3,
+      label: {
+        duration: 0
+      }
+    })
+
+    // submit form even though button is outside form (putting it inside breaks formatting)
+    $('#airport_selector_button').click(function () {
+      $('#airport_selector').submit()
+    })
   })
 </script>
 </body>
