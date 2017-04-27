@@ -142,7 +142,7 @@ ORDER BY p DESC;
         res = []
         for row in rows:
             it = {}
-            it['airline'] = row[0]
+            it['iata'] = row[0]
             it['num_routes'] = row[1]
             it['p'] = str(row[2])
             res.append(it)
@@ -173,7 +173,7 @@ SELECT DISTINCT prices.origin, prices.destination, prices.minprice, airlines.nam
 FROM routes
 INNER JOIN (
   SELECT src, dest FROM routes_unique
-  WHERE src = ANY() OR dest IN ('HKG', 'CDG', 'THU')
+  WHERE src = ANY(%(iatas)s) OR dest = ANY(%(iatas)s)
 ) AS my_routes
 ON (routes.src_airport = my_routes.src AND routes.dest_airport = my_routes.dest)
 INNER JOIN airlines
