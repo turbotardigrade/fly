@@ -121,7 +121,7 @@ def show_airlines():
 
     airlines = {}
     for cov in coverage:
-        airlines[cov['iata']] = {'num_routes': cov['num_routes'], 'share': cov['p']}
+        airlines[cov['iata']] = {'num_routes': cov['num_routes'], 'share': cov['p'], 'iata': cov['iata']}
 
     for price in prices:
         iata = price['airline_iata'].strip()
@@ -133,7 +133,7 @@ def show_airlines():
 
         airlines[iata]['routes'].append(price)
 
-    return jsonify({'airlines': airlines})
+    return jsonify({'airlines': airlines.values()})
 
 @app.route('/airlines/<code>', methods=['GET'])
 def show_airline_details(code):
