@@ -164,3 +164,41 @@ WHERE iata IN (%s)
             locations[row[0]] = {'lat': row[1], 'lng': row[2]}
 
         return locations
+
+    def getPricesCoveringAirports(self, iatas):
+        cur = self.conn.cursor()
+        # The last join condition is really long because skyscanner prices
+        cur.execute("""
+SELECT DISTINCT prices.origin, prices.destination, prices.minprice, airlines.name
+FROM routes
+INNER JOIN (
+  SELECT src, dest FROM routes_unique
+  WHERE src = ANY() OR dest IN ('HKG', 'CDG', 'THU')
+) AS my_routes
+ON (routes.src_airport = my_routes.src AND routes.dest_airport = my_routes.dest)
+INNER JOIN airlines
+ON routes.airline = airlines.iata
+INNER JOIN sky_open_join
+ON sky_open_join.open_name = airlines.name
+INNER JOIN prices
+ON (
+  prices.origin = routes.src_airport
+  AND prices.destination = routes.dest_airport
+  AND prices.outboundcarrier = sky_open_join.sky_name)
+  OR (
+  prices.origin = routes.dest_airport
+  AND prices.destination = routes.src_airport
+  AND prices.inboundcarrier = sky_open_join.sky_name);
+        """, {'iatas': iatas})
+
+        rows = cur.fetchall()
+        res = []
+        for row in rows:
+            it = {}
+            it['origin'] = rows[0]
+            it['destination'] = rows[1]
+            it['minprice'] = str(rows[2])
+            it['airline'] = rows[3]
+            res.append(it)
+
+        return res
