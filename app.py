@@ -116,24 +116,22 @@ def show_suggestion():
 @app.route('/airlines', methods=['GET'])
 def show_airlines():
     home_iatas, other_iatas = get_airport_params(request)
-    coverage = model.getAirlinesCoveringAirports(home_iatas, other_iatas)
+    airlines = model.getAirlinesCoveringAirports(home_iatas, other_iatas)
     prices = model.getPricesCoveringAirports(home_iatas, other_iatas)
-
-    airlines = {}
-    for cov in coverage:
-        airlines[cov['iata']] = {'num_routes': cov['num_routes'], 'share': cov['p'], 'iata': cov['iata']}
+    prices_map = {}
 
     for price in prices:
-        iata = price['airline_iata'].strip()
-        if 'name' not in airlines[iata]:
-            airlines[iata]['name'] = price['airline']
+       price['iata'] = price['iata'].strip()
+       if price['iata'] not in prices_map:
+          prices_map[price['iata']] = []
+       prices_map[price['iata']].append({'origin': price['origin'], 'destination': price['destination'], 'minprice': price['minprice']})
 
-        if 'routes' not in airlines[iata]:
-            airlines[iata]['routes'] = []
 
-        airlines[iata]['routes'].append(price)
+    for airline in airlines:
+       if airline['iata'] in prices_map:
+          airline['routes'] = prices_map[airline['iata']]
 
-    return jsonify({'airlines': airlines.values()})
+    return jsonify({'airlines': airlines})
 
 @app.route('/airlines/<code>', methods=['GET'])
 def show_airline_details(code):

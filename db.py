@@ -127,24 +127,24 @@ LIMIT 10;
     def getAirlinesCoveringAirports(self, home_iatas, other_iatas):
         cur = self.conn.cursor()
         cur.execute("""
-SELECT airline, count(*) as num_routes, (count(*) * 1.0) / sum(count(*)) over() as p
+SELECT airlines.name, t1.iata, t1.num_routes, t1.p
+FROM airlines INNER JOIN
+(SELECT routes.airline as iata, count(*) as num_routes, (count(*) * 1.0) / (SELECT count(*) FROM ROUTES_unique WHERE src = ANY(%(home_iatas)s) AND dest = ANY(%(other_iatas)s)) as p
 FROM routes
-INNER JOIN (
-  SELECT src, dest FROM routes_unique
-  WHERE src = ANY(%(home_iatas)s) AND dest = ANY(%(other_iatas)s)
-  ) AS my_routes
-ON (routes.src_airport = my_routes.src AND routes.dest_airport = my_routes.dest)
-GROUP BY airline
+WHERE src_airport = ANY(%(home_iatas)s) AND dest_airport = ANY(%(other_iatas)s)
+GROUP BY airline) as t1
+ON t1.iata = airlines.iata
 ORDER BY p DESC;
-        """, {'home_iatas': home_iatas, 'other_iatas': other_iatas})
+""", {'home_iatas': home_iatas, 'other_iatas': other_iatas})
 
         rows = cur.fetchall()
         res = []
         for row in rows:
             it = {}
-            it['iata'] = row[0]
-            it['num_routes'] = row[1]
-            it['p'] = str(row[2])
+            it['name'] = row[0]
+            it['iata'] = row[1]
+            it['num_routes'] = row[2]
+            it['p'] = str(round(row[3] * 100, 2)) + '%'
             res.append(it)
 
         return res
@@ -172,7 +172,7 @@ WHERE iata IN (%s)
         # therefore we need to match both directions of a quote separately, and use DISTINCT to deduplicate
         # when they happen to be the same carrier
         cur.execute("""
-SELECT DISTINCT prices.origin, prices.destination, prices.minprice, airlines.name, airlines.iata
+SELECT DISTINCT prices.origin, prices.destination, prices.minprice, airlines.name, trim(airlines.iata)
 FROM routes
 INNER JOIN (
   SELECT src, dest FROM routes_unique
@@ -202,7 +202,7 @@ ON (
             it['destination'] = row[1]
             it['minprice'] = str(row[2])
             it['airline'] = row[3]
-            it['airline_iata'] = row[4]
+            it['iata'] = row[4]
             res.append(it)
 
         return res
