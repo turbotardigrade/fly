@@ -21,8 +21,8 @@ model = db.model(os.environ['PSQL_URI'])
 ALLOWED_EXTENSIONS = set(['json'])
 app.config['UPLOAD_FOLDER'] = 'upload/'
 
-def allowed_file(filename):
-   return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+######################################################################
+### Routes
 
 @app.route("/static/<path:path>")
 def get_static(path):
@@ -67,8 +67,6 @@ def upload_location():
    # analyze location data to get Points of Interests and their
    # probabilities
    pois, data_size = location_analyzer.analyze(raw_data)
-
-   # render templatee
    for i, poi in enumerate(pois):
       lat, lon = poi['position']['lat'], poi['position']['lng']
       nearest = model.getNearestAirports(lat, lon)
@@ -77,24 +75,42 @@ def upload_location():
          for j in xrange(len(nearest)):
             nearest[j]['is_home'] = True
 
-      print nearest
+      nearest.sort(key=lambda x: x['distance'])
+      pois[i]['nearbyAirports'] = nearest
+      
+   return render_template('map.html', pois=pois, data_size=data_size)
+
+@app.route('/map', methods=['GET'])
+def show_map_from_manual_entry():
+   homes, iatas = get_airport_params(request)
+   pois = []
+   selected = []
+   pos = model.get_airport_locations(iatas)
+
+   for iata in iatas:
+      label = 5
+      if iata in homes:
+         label = 33
+
+      pois.append({'position': pos[iata], 'label': label})
+      selected.append({'name': precomputed.iata2name[iata], 'iata': iata})
+
+   for i, poi in enumerate(pois):
+      lat, lon = poi['position']['lat'], poi['position']['lng']
+      nearest = model.getNearestAirports(lat, lon)
+
+      if poi['label'] > 30:
+         for j in xrange(len(nearest)):
+            nearest[j]['is_home'] = True
+
+      nearest.sort(key=lambda x: x['distance'])
       pois[i]['nearbyAirports'] = nearest
 
-   return render_template('map.html', pois=pois, data_size=data_size)
+   return render_template('map.html', pois=pois, data_size=len(pois), selected=selected)
 
 @app.route('/suggestions', methods=['GET'])
 def show_suggestion():
-   homes = request.args.get('homes').split(',')
-   iatas = request.args.get('IATAs').split(',')
-
-   homes = map(lambda x: urllib.unquote(x).decode('utf8'), homes)
-   iatas = map(lambda x: urllib.unquote(x).decode('utf8'), iatas)
-
-   # Home airports must be in the list
-   for h in homes:
-      if h not in iatas:
-         iatas.append(h)
-   
+   homes, iatas = get_airport_params(request)
    return jsonify({'suggestions': suggester.get_suggestion(homes, iatas)})
 
 @app.route('/airlines', methods=['GET'])
@@ -108,6 +124,29 @@ def show_airline_details(code):
    details = model.get_airline_data(code)
    return render_template('airline.html', code=code, reviews=reviews, details=details)
 
+######################################################################
+### Helpers
+
+def get_airport_params(request):
+   homes = request.args.get('homes').split(',')
+   iatas = request.args.get('IATAs').split(',')
+
+   homes = map(lambda x: urllib.unquote(x).decode('utf8'), homes)
+   iatas = map(lambda x: urllib.unquote(x).decode('utf8'), iatas)
+
+   # Home airports must be in the list
+   for h in homes:
+      if h not in iatas:
+         iatas.append(h)
+
+   return homes, iatas
+
+def allowed_file(filename):
+   return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+######################################################################
+### Main
+
 if __name__ == "__main__":
    app.secret_key = 'It was the best of times, it was the worst of times. Turbo-the-tardigrade'
    app.config['SESSION_TYPE'] = 'filesystem'
@@ -117,3 +156,4 @@ if __name__ == "__main__":
    app.logger.setLevel(logging.ERROR)
 
    app.run(debug=True)
+

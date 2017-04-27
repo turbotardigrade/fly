@@ -56,7 +56,12 @@
     let data = {{pois|tojson|safe}};
     console.log(data);
     console.log('{{data_size}}');
+
     let storedAirports = [];
+
+     {% if selected %}
+     storedAirports = {{selected|tojson|safe}}
+     {% endif %}
 
     var styles = [
       {
@@ -123,9 +128,6 @@
         infowindow.open(map, marker);
         $("#airport-list").empty();
         let curr = $("#airport-list").append('<p><h1 style="text-align: center;">Nearby Airports</h1></p>');
-        data[index]['nearbyAirports'].sort(function(a, b) {
-          return a['distance'] - b['distance']
-        });
         for (let i = 0; i < data[index]['nearbyAirports'].length; ++i) {
           let a = $('<p></p>', {
             'html': data[index]['nearbyAirports'][i]['IATA'] + ' - '
@@ -137,6 +139,7 @@
           a.attr("class", "btn btn-default airport");
           a.attr("style", "width: 100%; margin-bottom: 10px; white-space: normal");
           a.data("airport-name", data[index]['nearbyAirports'][i]['name']);
+	  a.data("airport-iata", data[index]['nearbyAirports'][i]['IATA']);
           if (storedAirports.includes(a.data("airport-name"))) {
             a.addClass("active");
           }
@@ -147,7 +150,7 @@
               })
               $(this).removeClass("active");
             } else {
-              storedAirports.push($(this).data("airport-name"));
+              storedAirports.push({name: $(this).data("airport-name"), iata: $(this).data("airport-iata")});
               $(this).addClass("active")
             }
           });
@@ -177,7 +180,7 @@
                 return elem !== storedAirports[i];
               })
             })
-            let tablerow = $("<tr><td>" + storedAirports[i] + "</td></tr>");
+            let tablerow = $("<tr><td>" + storedAirports[i].iata + "-" + storedAirports[i].name + "</td></tr>");
             tablerow.append(cross)
             tablerow.appendTo($("#chosen-list"))
           }

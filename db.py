@@ -148,3 +148,19 @@ ORDER BY p DESC;
             res.append(it)
 
         return res
+
+    def get_airport_locations(self, iatas):
+        cur = self.conn.cursor()
+        cur.execute("""
+
+SELECT iata, latitude as lat, longitude as lon
+FROM airports
+WHERE iata IN (%s)
+
+        """ % ','.join(map(lambda x: "'"+x+"'", iatas))) # UNSAFE
+
+        locations = {}
+        for row in cur.fetchall():
+            locations[row[0]] = {'lat': row[1], 'lng': row[2]}
+
+        return locations

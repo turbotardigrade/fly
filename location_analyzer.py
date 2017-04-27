@@ -7,7 +7,7 @@ def analyze(raw_data):
     data_size = len(data)
     print("# of locations %d" % data_size)
 
-    reduceByFactor = 10
+    reduceByFactor = 50
     locations = [None for _ in xrange(data_size/reduceByFactor+1)]
 
     # Reduce the data size
