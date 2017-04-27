@@ -1,13 +1,33 @@
 <!doctype html>
 <head>
   <title>FlyingTardigrades Flightportal for Frequent Flyers</title>
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.10/semantic.min.css">
+  <link rel="stylesheet" type="text/css" href="https://oss.maxcdn.com/semantic-ui/2.0.6/semantic.min.css">
+  <link rel="stylesheet" type="text/css" href="https://oss.maxcdn.com/semantic-ui/2.0.6/components/card.min.css">
+  <link rel="stylesheet" type="text/css" href="https://oss.maxcdn.com/semantic-ui/2.0.6/components/button.min.css">
 
   <script
           src="https://code.jquery.com/jquery-3.1.1.min.js"
           integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
           crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.10/semantic.min.js"></script>
+
+  <style>
+   body {
+       padding: 20px;
+       font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif;
+   }
+   .ui.cards>.card {
+       width: 360px;
+       cursor: pointer;
+   }
+   .ui.cards>.card:hover {
+       background-color: #efefef;
+   }
+   .ui.cards > .create-action.card:hover {
+       background-color: #fff;
+   }
+  </style>
+
 </head>
 <body>
   {% with messages = get_flashed_messages() %}
@@ -24,52 +44,110 @@
     <h1>Flight Portal for Frequent Flyers</h1>
 
     <hr />
-    <h2>Please input airports you've visited the most</h2>
-    <h3>Option 1a (recommended): Upload your Google Location History data</h3>
-      <p>
-	You can download your Google Location History here: <br />
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://takeout.google.com/settings/takeout">https://takeout.google.com/settings/takeout</a>
-      </p>
-    <form method="post" enctype="multipart/form-data">
-      <p>
-	<input type="file" name="file" />
-        <input type="submit" value="Submit" />
-      </p>
-    </form>
-    <h3>OR</h3>
-    <form method="post">
-      <h4>Option 1b: Use sample data</h4>
-      <p>
-        <button type="submit" name="use_example" value="1">Use example data</button>
-      </p>
-    </form>
-    <h3>OR</h3>
-    <form action="./airlines" method="get">
-      <h4>Option 2: Select airports manually</h4>
-      <div class="ui fluid multiple search selection dropdown">
-        <input name="homes" type="hidden">
-        <i class="dropdown icon"></i>
-        <div class="default text">Select Other Airport</div>
-        <div class="menu">
-	  {% for airport in airports %}
-	  <div class="item" data-value="{{ airport.iata }}">{{ airport.name }} - {{ airport.iata }}</div>
-	  {% endfor %}
-        </div>
+    <h2>Choose one</h2>
+
+    <div class="ui cards">
+      <div class="card">
+	<div class="content">
+	  <i class="right floated cloud icon teal" style="font-size: 30px;"></i>
+	  <div class="header">
+	    Upload your Google Location History
+	  </div>
+	  <div class="meta">
+            <code>Recommended</code>
+	  </div>
+
+	  <div class="description">
+	    <p>
+	      You can download your Google Location History here: <br />
+	      <pre style="font-size: 0.8em;"><a href="https://takeout.google.com/settings/takeout">https://takeout.google.com/settings/takeout</a></pre>
+	    </p>
+	  </div>
+	  <br />
+	</div>
+	<div class="extra content">
+	  <div style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 100%;">
+	    <form method="post" enctype="multipart/form-data">
+		<input type="file" name="file" />
+		<input type="submit" value="Submit" />
+	    </form>	  
+	  </div>
+	</div>
       </div>
-      <br />
-      <div class="ui fluid multiple search selection dropdown">
-        <input name="IATAs" type="hidden">
-        <i class="dropdown icon"></i>
-	  <div class="default text">Select Home Airport(s) - your most used airport near to your home</div>
-        <div class="menu">
-	  {% for airport in airports %}
-	  <div class="item" data-value="{{ airport.iata }}">{{ airport.name }} - {{ airport.iata }}</div>
-	  {% endfor %}
-        </div>
+
+      <div class="card">
+	<div class="content">
+	  <i class="right floated archive icon teal" style="font-size: 30px;"></i>
+	  <div class="header">
+	    Use our sample data
+	  </div>
+	  <div class="meta">
+            <code>If you just want to experiment</code>
+	  </div>
+
+	  <div class="description">
+	    <br />
+	    <p>You don't have your data ready, but just want to play around with the portal? Use your example data!</p>
+	    <br />
+	  </div>
+	</div>
+	<div class="extra content">
+	  <div style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 100%;">
+	    <form method="post">
+	      <button type="submit" name="use_example" value="1">Use example data</button>
+	    </form>
+	  </div>
+	</div>	    
       </div>
-      <br />
-      <button type="submit">Use selected airports</button>
-    </form>
+
+
+      <div class="card">
+	<div class="content">
+	  <form action="./airports" method="get">	  	    
+	    <i class="right floated keyboard icon teal" style="font-size: 30px;"></i>
+	    <div class="header">
+	      Select airports manually
+	    </div>
+	    <div class="meta">
+	      <code>Being old school</code>
+	    </div>
+	    <div class="description">
+	      <br />
+	      <div class="ui fluid multiple search selection dropdown">
+		<input name="homes" type="hidden">
+		<i class="dropdown icon"></i>
+		<div class="default text">Home Airport(s)</div>
+		<div class="menu">
+		  {% for airport in airports %}
+		  <div class="item" data-value="{{ airport.iata }}">{{ airport.name }} - {{ airport.iata }}</div>
+		  {% endfor %}
+		</div>
+	      </div> <!-- dropdown 1 -->
+	      <br />
+	      <div class="ui fluid multiple search selection dropdown">
+		<input name="IATAs" type="hidden">
+		<i class="dropdown icon"></i>
+		<div class="default text">Frequent visited Airports</div>
+		<div class="menu">
+		  {% for airport in airports %}
+		  <div class="item" data-value="{{ airport.iata }}">{{ airport.name }} - {{ airport.iata }}</div>
+		  {% endfor %}
+		</div>
+	      </div> <!-- dropdown 2 -->
+	      <br />
+	    </div> <!-- description -->
+
+	</div> <!-- content -->
+	<div class="extra content">
+	  <div style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 100%;">
+	    <button type="submit">Use selected airports</button>
+	  </div>
+	  </form>
+	</div> <!-- extra -->
+      </div> <!-- card -->
+      
+    </div>
+    
   </div>
   <script>
       $('.dropdown').dropdown({
