@@ -75,7 +75,7 @@
   </head>
   <body>
     <div style="position:absolute;right: 50px; bottom: 50px;">
-      <a class="btn-floating btn-large red" style="font-size:1.7em;" onClick="alert(getNextPage());"><i>></i></a>
+      <a class="btn-floating btn-large red" style="font-size:1.7em;" onClick="nextPage();"><i>></i></a>
     </div>
 
     <div id="sidebar" class="sidebar collapsed">
@@ -253,7 +253,7 @@
         }
       }
 
-     function getNextPage() {
+     function nextPage() {
        iatas = [];
        homes = [];
        for (let i=0; i<storedAirports.length; i++) {
@@ -264,7 +264,12 @@
 	   iatas.push(item.iata);
 	 }
        }
-       return './airlines?IATAs='+iatas.join()+'&homes='+homes.join();
+
+       if (iatas.length + homes.length < 5) {
+	 alert('Please select at least 5 airports!');
+	 return;
+       }
+       window.location.href = '/airlines?IATAs='+iatas.join()+'&homes='+homes.join();
      }
     </script>
   </body>
