@@ -13,12 +13,71 @@
      #map {
          height: 100%;
      }
+     .z-depth-1, nav, .card-panel, .card, .toast, .btn, .btn-large, .btn-floating, .dropdown-content, .collapsible, .side-nav {
+	 box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+     }
+
+     .btn-large:hover .btn-floating:hover {
+	 box-shadow: 0 3px 3px 0 rgba(0, 0, 0, 0.14), 0 1px 7px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -1px rgba(0, 0, 0, 0.2);
+     }
+
+     .btn-floating {
+	 display: inline-block;
+	 color: #fff;
+	 position: relative;
+	 overflow: hidden;
+	 z-index: 1;
+	 width: 40px;
+	 height: 40px;
+	 line-height: 40px;
+	 padding: 0;
+	 background-color: #26a69a;
+	 border-radius: 50%;
+	 transition: .3s;
+	 cursor: pointer;
+	 vertical-align: middle;
+     }
+
+     .btn-floating:hover {
+	 background-color: #26a69a;
+     }
+
+     .btn-floating:before {
+	 border-radius: 0;
+     }
+
+     .btn-floating.btn-large {
+	 width: 56px;
+	 height: 56px;
+     }
+
+
+     .btn-floating i {
+	 width: inherit;
+	 display: inline-block;
+	 text-align: center;
+	 color: #fff;
+	 font-size: 2.7rem;
+	 line-height: 50px;
+     }
+
+     button.btn-floating {
+	 border: none;
+     }
+
+     .red {
+	 background-color: #F44336 !important;
+     }
     </style>
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" href="/static/css/gmaps-sidebar.css" />
   </head>
   <body>
+    <div style="position:absolute;right: 50px; bottom: 50px;">
+      <a class="btn-floating btn-large red" style="font-size:1.7em;" onClick="alert(getNextPage());"><i>></i></a>
+    </div>
+
     <div id="sidebar" class="sidebar collapsed">
         <!-- Nav tabs -->
         <div class="sidebar-tabs">
@@ -140,6 +199,7 @@
           a.attr("style", "width: 100%; margin-bottom: 10px; white-space: normal");
           a.data("airport-name", data[index]['nearbyAirports'][i]['name']);
 	  a.data("airport-iata", data[index]['nearbyAirports'][i]['IATA']);
+	  a.data("airport-home", data[index]['nearbyAirports'][i]['is_home']);
           if (storedAirports.includes(a.data("airport-name"))) {
             a.addClass("active");
           }
@@ -150,7 +210,8 @@
               })
               $(this).removeClass("active");
             } else {
-              storedAirports.push({name: $(this).data("airport-name"), iata: $(this).data("airport-iata")});
+	      console.log($(this).data("airport-home"));
+              storedAirports.push({name: $(this).data("airport-name"), iata: $(this).data("airport-iata"), is_home: $(this).data("airport-home")});
               $(this).addClass("active")
             }
           });
@@ -191,6 +252,20 @@
           sidebar.open("home");
         }
       }
+
+     function getNextPage() {
+       iatas = [];
+       homes = [];
+       for (let i=0; i<storedAirports.length; i++) {
+	 let item = storedAirports[i]
+	 if (item.is_home) {
+	   homes.push(item.iata);
+	 } else {
+	   iatas.push(item.iata);
+	 }
+       }
+       return './airlines?IATAs='+iatas.join()+'&homes='+homes.join();
+     }
     </script>
   </body>
 </html>

@@ -88,12 +88,12 @@ def show_map_from_manual_entry():
    pos = model.get_airport_locations(iatas)
 
    for iata in iatas:
-      label = 5
+      label, is_home = 5, False
       if iata in homes:
-         label = 33
+         label, is_home = 33, True
 
       pois.append({'position': pos[iata], 'label': label})
-      selected.append({'name': precomputed.iata2name[iata], 'iata': iata})
+      selected.append({'name': precomputed.iata2name[iata], 'iata': iata, 'is_home': is_home})
 
    for i, poi in enumerate(pois):
       lat, lon = poi['position']['lat'], poi['position']['lng']
