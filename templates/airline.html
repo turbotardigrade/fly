@@ -33,9 +33,82 @@
     <h1>{{ code }} - {{ details.name }}</h1>
 
     <hr />
-    {{ details|safe }}
+
+    <br />
+    <div class="ui three column grid">
+      
+      <div class="column">
+	<table class="top attached ui basic table">
+	  <thead>
+	    <tr>
+	      <th colspan="2">Basic Info</th>
+            </tr>
+	  </thead>
+	  <tbody>
+	    <tr>
+	      <td>Name</td>
+	      <td>{{ details.name }}</td>
+	    </tr>
+	    <tr>
+	      <td>Alias</td>
+	      <td>{{ details.alias }}</td>
+	    </tr>
+	    <tr>
+	      <td>Country</td>
+	      <td>{{ details.country }}</td>
+	    </tr>
+	    <tr>
+	      <td>Active?</td>
+	      <td>{{ details.active }}</td>
+	    </tr>
+	  </tbody>
+	</table>
+      </div>
+
+      <div class="column">
+	<table class="top attached ui basic table">
+	  <thead>
+	    <tr>
+	      <th colspan="2">Codes</th>
+            </tr>
+	  </thead>
+	  <tbody>
+	    <tr>
+	      <td>IATA</td>
+	      <td>{{ details.iata }}</td>
+	    </tr>
+	    <tr>
+	      <td>ICAO</td>
+	      <td>{{ details.icao }}</td>
+	    </tr>
+	    <tr>
+	      <td>Callsign</td>
+	      <td>{{ details.callsign }}</td>
+	    </tr>
+	  </tbody>
+	</table>
+      </div>
+
+      <div class="column">
+	<table class="top attached ui basic table">
+	  <thead>
+	    <tr>
+	      <th colspan="2">Statistics</th>
+            </tr>
+	  </thead>
+	  <tbody>
+	    <tr>
+	      <td>Average Flight Delay</td>
+	      <td>@TODO</td>
+	    </tr>
+	  </tbody>
+	</table>
+      </div>
+
+
+    </div> <!-- column grid -->
     <h2>Reviews:</h2>
-<div class="ui cards">
+    <div class="ui cards">
     {% for rev in reviews %}
     <div class="card">
       <div class="content">
@@ -59,7 +132,7 @@
       </div>
     </div>
     {% endfor %}
-</div>
+    </div>
     <hr />
   </div>
 </body>
