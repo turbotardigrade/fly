@@ -124,19 +124,19 @@ LIMIT 10;
 
         return res
 
-    def getAirlinesCoveringAirports(self, iatas):
+    def getAirlinesCoveringAirports(self, home_iatas, other_iatas):
         cur = self.conn.cursor()
         cur.execute("""
 SELECT airline, count(*) as num_routes, (count(*) * 1.0) / sum(count(*)) over() as p
 FROM routes
 INNER JOIN (
   SELECT src, dest FROM routes_unique
-  WHERE src = ANY(%(iatas)s) OR dest = ANY(%(iatas)s)
+  WHERE src = ANY(%(home_iatas)s) AND dest = ANY(%(other_iatas)s)
   ) AS my_routes
 ON (routes.src_airport = my_routes.src AND routes.dest_airport = my_routes.dest)
 GROUP BY airline
 ORDER BY p DESC;
-        """, {'iatas': iatas})
+        """, {'home_iatas': home_iatas, 'other_iatas': other_iatas})
 
         rows = cur.fetchall()
         res = []
@@ -165,7 +165,7 @@ WHERE iata IN (%s)
 
         return locations
 
-    def getPricesCoveringAirports(self, iatas):
+    def getPricesCoveringAirports(self, home_iatas, other_iatas):
         cur = self.conn.cursor()
         # The last join condition is really long because skyscanner prices are for return tickets
         # which may have different outbound and inbound carriers
@@ -176,7 +176,7 @@ SELECT DISTINCT prices.origin, prices.destination, prices.minprice, airlines.nam
 FROM routes
 INNER JOIN (
   SELECT src, dest FROM routes_unique
-  WHERE src = ANY(%(iatas)s) OR dest = ANY(%(iatas)s)
+  WHERE src = ANY(%(home_iatas)s) AND dest = ANY(%(other_iatas)s)
 ) AS my_routes
 ON (routes.src_airport = my_routes.src AND routes.dest_airport = my_routes.dest)
 INNER JOIN airlines
@@ -192,7 +192,7 @@ ON (
   prices.origin = routes.dest_airport
   AND prices.destination = routes.src_airport
   AND prices.inboundcarrier = sky_open_join.sky_name);
-        """, {'iatas': iatas})
+        """, {'home_iatas': home_iatas, 'other_iatas': other_iatas})
 
         rows = cur.fetchall()
         res = []

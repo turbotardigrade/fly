@@ -82,14 +82,14 @@ def upload_location():
 
 @app.route('/map', methods=['GET'])
 def show_map_from_manual_entry():
-   homes, iatas = get_airport_params(request)
+   home_iatas, other_iatas = get_airport_params(request)
    pois = []
    selected = []
-   pos = model.get_airport_locations(iatas)
+   pos = model.get_airport_locations(other_iatas)
 
-   for iata in iatas:
+   for iata in other_iatas:
       label, is_home = 5, False
-      if iata in homes:
+      if iata in home_iatas:
          label, is_home = 33, True
 
       pois.append({'position': pos[iata], 'label': label})
@@ -110,13 +110,13 @@ def show_map_from_manual_entry():
 
 @app.route('/suggestions', methods=['GET'])
 def show_suggestion():
-   homes, iatas = get_airport_params(request)
-   return jsonify({'suggestions': suggester.get_suggestion(homes, iatas)})
+   home_iatas, other_iatas = get_airport_params(request)
+   return jsonify({'suggestions': suggester.get_suggestion(home_iatas, other_iatas)})
 
 @app.route('/airlines', methods=['GET'])
 def show_airlines():
-    homes, iatas = get_airport_params(request)
-    return jsonify({'airlines': model.getAirlinesCoveringAirports(iatas)})
+   home_iatas, other_iatas = get_airport_params(request)
+   return jsonify({'airlines': model.getAirlinesCoveringAirports(home_iatas, other_iatas)})
 
 @app.route('/airlines/<code>', methods=['GET'])
 def show_airline_details(code):
@@ -128,18 +128,18 @@ def show_airline_details(code):
 ### Helpers
 
 def get_airport_params(request):
-   homes = request.args.get('homes').split(',')
-   iatas = request.args.get('IATAs').split(',')
+   home_iatas = request.args.get('home_iatas').split(',')
+   other_iatas = request.args.get('other_iatas').split(',')
 
-   homes = map(lambda x: urllib.unquote(x).decode('utf8'), homes)
-   iatas = map(lambda x: urllib.unquote(x).decode('utf8'), iatas)
+   home_iatas = map(lambda x: urllib.unquote(x).decode('utf8'), home_iatas)
+   other_iatas = map(lambda x: urllib.unquote(x).decode('utf8'), other_iatas)
 
    # Home airports must be in the list
-   for h in homes:
-      if h not in iatas:
-         iatas.append(h)
+   for h in home_iatas:
+      if h not in other_iatas:
+         other_iatas.append(h)
 
-   return homes, iatas
+   return home_iatas, other_iatas
 
 def allowed_file(filename):
    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
