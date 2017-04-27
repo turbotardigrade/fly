@@ -167,7 +167,10 @@ WHERE iata IN (%s)
 
     def getPricesCoveringAirports(self, iatas):
         cur = self.conn.cursor()
-        # The last join condition is really long because skyscanner prices
+        # The last join condition is really long because skyscanner prices are for return tickets
+        # which may have different outbound and inbound carriers
+        # therefore we need to match both directions of a quote separately, and use DISTINCT to deduplicate
+        # when they happen to be the same carrier
         cur.execute("""
 SELECT DISTINCT prices.origin, prices.destination, prices.minprice, airlines.name
 FROM routes
