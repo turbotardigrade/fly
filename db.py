@@ -172,7 +172,7 @@ WHERE iata IN (%s)
         # therefore we need to match both directions of a quote separately, and use DISTINCT to deduplicate
         # when they happen to be the same carrier
         cur.execute("""
-SELECT DISTINCT prices.origin, prices.destination, prices.minprice, airlines.name
+SELECT DISTINCT prices.origin, prices.destination, prices.minprice, airlines.name, airlines.iata
 FROM routes
 INNER JOIN (
   SELECT src, dest FROM routes_unique
@@ -202,6 +202,7 @@ ON (
             it['destination'] = row[1]
             it['minprice'] = str(row[2])
             it['airline'] = row[3]
+            it['airline_iata'] = row[4]
             res.append(it)
 
         return res
