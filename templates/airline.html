@@ -122,7 +122,7 @@
 
 	<div class="description">
 	  {{ rev.content }}<br /><br />
-	  @TODO add rating
+	  <div class="ui large star rating" data-rating="{{ rev.rating }}" data-max-rating="5"></div>
 	</div>
       </div>
       <div class="extra content">
@@ -135,5 +135,6 @@
     </div>
     <hr />
   </div>
+  <script type="text/javascript">$(document).ready(function(){$(".rating").rating('enable');});</script>
 </body>
 </html>

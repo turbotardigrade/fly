@@ -107,7 +107,7 @@ SELECT content, helpful_percentage, rating, name, url
 FROM flightdiary_airline_comments
 WHERE airline_id = (SELECT id FROM flightdiary_airlines WHERE iata = %(iata)s LIMIT 1)
 ORDER BY helpful_percentage DESC
-LIMIT 10;
+LIMIT 20;
 
         """, {'iata':iata})
 
