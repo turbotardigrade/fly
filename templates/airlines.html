@@ -13,14 +13,13 @@
 </head>
 <body>
   <div class="ui container">
-    <h1>Recommended Airlines</h1>
-
+    <h1 class="ui header">Recommended Airlines</h1>
+    <h4 class="sub header">Here you can find airlines that cover routes between your home airports and other preferred airports</h4>
     <div class="ui fluid styled accordion">
       {% for airline in airlines %}
       <div class="title">
-        {{ airline }}
         <i class="dropdown icon"></i>
-        <div class="ui divided horizontal list">
+        <div class="ui large divided horizontal list">
           <div class="item">
             {{ airline.iata }}
           </div>
@@ -28,21 +27,34 @@
             {{ airline.name }}
           </div>
           <div class="item">
-            {{ airline.num_routes }}
+            Number of routes: {{ airline.num_routes }}
           </div>
           <div class="item">
-            {{ airline.p }}
+            Coverage of your routes: {{ airline.p }}
           </div>
+          {% if airline.meandelay %}
+          <div class="item">
+            Mean delay: {{ airline.meandelay }}
+          </div>
+          {% endif %}
         </div>
       </div>
       <div class="content">
-        <p>Prices here</p>
+        <h4><a href="/airlines/{{ airline.iata }}">View details of this airline</a></h4>
+        <h4>Routes and their minimum prices</h4>
         <div class="ui list">
           {% for route in airline.routes %}
         <div class="item">
-          {{ route.origin }}
-          {{ route.destination }}
-          {{ route.minprice }}
+          <h5>
+            <div class="ui list horizontal divided">
+              <div class="item">
+                {{ route.origin }} -> {{ route.destination }}
+              </div>
+              <div class="item">
+                {{ route.minprice }}
+              </div>
+            </div>
+          </h5>
         </div>
           {% endfor %}
         </div>
