@@ -218,7 +218,7 @@
         let curr = $("#airport-list").append('<p><h1 style="text-align: center;">Nearby Airports</h1></p>');
         for (let i = 0; i < data[index]['nearbyAirports'].length; ++i) {
           let a = $('<p></p>', {
-            'html': data[index]['nearbyAirports'][i]['IATA'] + ' - '
+            'html': data[index]['nearbyAirports'][i]['iata'] + ' - '
                   + data[index]['nearbyAirports'][i]['name']
                   +  "<br /><code>Distance: "
                   + data[index]['nearbyAirports'][i]['distance']
@@ -227,7 +227,7 @@
           a.attr("class", "btn btn-default airport");
           a.attr("style", "width: 100%; margin-bottom: 10px; white-space: normal");
           a.data("airport-name", data[index]['nearbyAirports'][i]['name']);
-          a.data("airport-iata", data[index]['nearbyAirports'][i]['IATA']);
+          a.data("airport-iata", data[index]['nearbyAirports'][i]['iata']);
           a.data("airport-home", data[index]['nearbyAirports'][i]['is_home']);
           if (storedAirports.includes(a.data("airport-name"))) {
             a.addClass("active");
@@ -240,7 +240,7 @@
               $(this).removeClass("active");
             } else {
 	            console.log($(this).data("airport-home"));
-              storedAirports.push({name: $(this).data("airport-name"), IATA: $(this).data("airport-iata"), is_home: $(this).data("airport-home")});
+              storedAirports.push({name: $(this).data("airport-name"), iata: $(this).data("airport-iata"), is_home: $(this).data("airport-home")});
               $(this).addClass("active")
             }
           });
@@ -270,7 +270,7 @@
                 return elem !== storedAirports[i];
               })
             })
-            let tablerow = $("<tr><td>" + storedAirports[i].IATA + "-" + storedAirports[i].name + "</td></tr>");
+            let tablerow = $("<tr><td>" + storedAirports[i].iata + "-" + storedAirports[i].name + "</td></tr>");
             tablerow.append(cross)
             tablerow.appendTo($("#chosen-list"))
           }
@@ -281,12 +281,12 @@
           for (let i = 0; i < storedAirports.length; i++) {
             let item = storedAirports[i]
             if (!item.is_home) {
-              iatas.push(item.IATA);
+              iatas.push(item.iata);
             }
           }
           for (let i = 0; i < homeAirports.length; i++) {
             let item = homeAirports[i];
-            homes.push(item.IATA);
+            homes.push(item.iata);
           }
           $("#suggested-list").empty();
           $.get('/airlines', {
@@ -323,9 +323,9 @@
        for (let i=0; i<storedAirports.length; i++) {
         let item = storedAirports[i]
         if (item.is_home) {
-          homes.push(item.IATA);
+          homes.push(item.iata);
         } else {
-          iatas.push(item.IATA);
+          iatas.push(item.iata);
         }
       }
 

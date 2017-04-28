@@ -168,12 +168,10 @@ ORDER BY p DESC;
     def get_airport_locations(self, iatas):
         cur = self.conn.cursor()
         cur.execute("""
-
 SELECT iata, latitude as lat, longitude as lon
 FROM airports
-WHERE iata IN (%s)
-
-        """ % ','.join(map(lambda x: "'"+x+"'", iatas))) # UNSAFE
+WHERE iata = ANY(%(iatas)s)
+        """, {'iatas': iatas}) # UNSAFE
 
         locations = {}
         for row in cur.fetchall():
