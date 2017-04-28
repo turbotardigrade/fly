@@ -305,6 +305,12 @@
             console.log('SUGGESTED AIRPORTS')
             console.log(result)
             let airports = result.suggestions.airports;
+            if (airports.length == 0) {
+              let html = `<tr><td>No suggested airports found!</td></tr>`
+              let tablerow = $(html)
+              tablerow.appendTo($('#suggested-list'))
+              return
+            }
             for (let i = 0; i < airports.length; ++i) {
               let html = `<tr><td class="suggested-airport">${airports[i].iata} - ${airports[i].name} - ${airports[i].country}</td></tr>`
               let tablerow = $(html);
