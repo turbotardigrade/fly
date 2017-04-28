@@ -65,7 +65,7 @@ ORDER BY distance;
         res = []
         for row in rows:
             it = {}
-            it['IATA'] = row[0]
+            it['iata'] = row[0]
             it['name'] = row[1]
             it['ranking'] = row[2]
             it['distance'] = row[3]
