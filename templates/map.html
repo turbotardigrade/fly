@@ -289,22 +289,15 @@
             homes.push(item.iata);
           }
           $("#suggested-list").empty();
-          $.get('/airlines', {
+          $.get('/suggestions', {
             'other_iatas': iatas.join(),
             'home_iatas': homes.join()
           }, function(result) {
-            let airlines = result.airlines;
-            for (let i = 0; i < airlines.length; ++i) {
-              let html = "<tr><td>" + airlines[i].iata + " - " + airlines[i].name + "<br>"
-              if (airlines[i].num_routes) {
-                html += "Number of routes: " + airlines[i].num_routes + "<br>"
-              }
-              if (airlines[i].meandelay) {
-                html += "Mean delay time: " + airlines[i].meandelay + "<br>"
-              }
-              if (airlines[i].p) {
-                html += "P: " + airlines[i].p + "</td></tr>"
-              }
+            console.log('SUGGESTED AIRPORTS')
+            console.log(result)
+            let airports = result.suggestions.iatas;
+            for (let i = 0; i < airports.length; ++i) {
+              let html = "<tr><td>" + airports[i] + "</td></tr>"// + " - " + airports[i].name + "<br>"
               let tablerow = $(html);
               tablerow.appendTo($("#suggested-list"))
             }
