@@ -13,6 +13,7 @@
 </head>
 <body>
   <div class="ui container">
+    <br /><br />
     <h1 class="ui header">Recommended Airlines</h1>
     <h4 class="sub header">Here you can find airlines that cover routes between your home airports and other preferred airports</h4>
     <div class="ui fluid styled accordion">
@@ -20,20 +21,20 @@
       <div class="title">
         <i class="dropdown icon"></i>
         <div class="ui large divided horizontal list">
-          <div class="item">
+          <div class="item" style="font-size: 1.1em;">
             {{ airline.iata }}
           </div>
-          <div class="item">
+          <div class="item" style="font-size: 1.1em;">
             {{ airline.name }}
           </div>
-          <div class="item">
+          <div class="item" style="font-size: 1.1em;">
             Number of routes: {{ airline.num_routes }}
           </div>
-          <div class="item">
+          <div class="item" style="font-size: 1.1em;">
             Coverage of your routes: {{ airline.p }}
           </div>
           {% if airline.meandelay %}
-          <div class="item">
+          <div class="item" style="font-size: 1.1em;">
             Mean delay: {{ airline.meandelay }}
           </div>
           {% endif %}
