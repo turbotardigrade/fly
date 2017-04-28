@@ -14,7 +14,7 @@ import precomputed
 
 app = Flask(__name__, static_url_path='/static')
 model = db.model(os.environ['PSQL_URI'])
-
+ 
 ######################################################################
 ### Constants
 
@@ -135,13 +135,15 @@ def show_airlines():
 
 @app.route('/airlines/<code>', methods=['GET'])
 def show_airline_details(code):
-   reviews = model.get_airline_reviews(code)
    details = model.get_airline_data(code)
+   reviews = model.get_airline_reviews(code)
+
+   details['meandelay'] = model.getFlightDelay(code)
 
    for rev in reviews:
        # This is probably wrong
        rev['rating'] = round(max(min(int(rev['rating']) / float(5), 5.0), 1.0))
-   
+
    return render_template('airline.html', code=code, reviews=reviews, details=details)
 
 ######################################################################

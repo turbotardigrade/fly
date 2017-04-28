@@ -221,3 +221,30 @@ ON (
             res.append(it)
 
         return res
+
+    def getFlightDelay(self, iata):
+        cur = self.conn.cursor()
+        cur.execute("""
+SELECT t2.meandelay as meandelay
+FROM airlines 
+LEFT JOIN
+(
+    SELECT open_name, meandelay
+    FROM
+    (
+        SELECT airline_name, avg(CASE WHEN average_delay_mins = '' THEN 0 ELSE average_delay_mins::float END) as meandelay
+        FROM uk_delay_table
+        GROUP BY airline_name
+    ) a INNER JOIN sky_open_uk_join ON a.airline_name = sky_open_uk_join.uk_name
+) as t2 ON airlines.name = t2.open_name
+
+WHERE airlines.iata = %s
+
+        """, [iata])
+
+        rows = cur.fetchall()
+
+        if len(rows) > 0:
+            return round(rows[0][0])
+        else:
+            return 'Unknown'
