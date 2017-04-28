@@ -113,6 +113,33 @@ def show_suggestion():
    home_iatas, other_iatas = get_airport_params(request)
    return jsonify({'suggestions': suggester.get_suggestion(home_iatas, other_iatas)})
 
+def process_prices(data):
+    routes = {}
+    for d in data:
+        key = d['origin']+' --> '+d['destination']
+        if key not in routes:
+            routes[key] = [d]
+        else:
+            routes[key] += [d]
+
+    res = []
+    for k in routes:
+        agg = []
+        for r in routes[k]:
+            print r
+            agg.append(float(r['minprice']))
+
+        res.append({
+            'origin': routes[k][0]['origin'],
+            'destination': routes[k][0]['destination'],
+            'max': round(max(agg), 2),
+            'min': round(min(agg), 2),
+            'mean': round(sum(agg)/len(agg), 2)
+        })
+
+    return res
+    
+
 @app.route('/airlines', methods=['GET'])
 def show_airlines():
     home_iatas, other_iatas = get_airport_params(request)
@@ -126,10 +153,9 @@ def show_airlines():
           prices_map[price['iata']] = []
        prices_map[price['iata']].append({'origin': price['origin'], 'destination': price['destination'], 'minprice': price['minprice']})
 
-
     for airline in airlines:
        if airline['iata'] in prices_map:
-          airline['routes'] = prices_map[airline['iata']]
+          airline['routes'] = process_prices(prices_map[airline['iata']])
 
     return render_template('airlines.html', airlines=airlines)
 

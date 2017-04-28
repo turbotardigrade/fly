@@ -41,24 +41,31 @@
       </div>
       <div class="content">
         <h4><a href="/airlines/{{ airline.iata }}">View details of this airline</a></h4>
-        <h4>Routes and their minimum prices</h4>
-        <div class="ui list">
-          {% for route in airline.routes %}
-        <div class="item">
-          <h5>
-            <div class="ui list horizontal divided">
-              <div class="item">
-                {{ route.origin }} -> {{ route.destination }}
-              </div>
-              <div class="item">
-                {{ route.minprice }}
-              </div>
-            </div>
-          </h5>
-        </div>
-          {% endfor %}
-        </div>
+        <h4>Routes and their prices</h4>
+	<table class="top attached ui basic table">
+	  <thead>
+	    <tr>
+	      <th>Route</th>
+	      <th>Min Price</th>
+	      <th>Mean Price</th>
+	      <th>Max Price</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    {% for route in airline.routes %}
+
+	    <tr>
+	      <td>{{ route.origin }} -> {{ route.destination }}</td>
+	      <td>{{ route.min }} USD</td>
+	      <td>{{ route.mean }} USD</td>
+	      <td>Max: {{ route.max }} USD</td>
+	    </tr>
+	    {% endfor %}
+	  </tbody>
+	</table>
       </div>
+
+
       {% endfor %}
     </div>
   </div>
