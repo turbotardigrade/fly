@@ -2,6 +2,7 @@ import sys
 import signal
 import itertools
 import time
+import json
 
 from fp_growth import find_frequent_itemsets
 from pprint import pprint
@@ -133,6 +134,16 @@ def get_suggestion(homes, airports):
             suggestion.extend(min_set)
 
 
-    suggestion = __generate_suggestion(suggestion, airports)
+    suggestion_iatas = __generate_suggestion(suggestion, airports)
+    suggestions = []
 
-    return { 'relevant_frequent_sets': relevant_frequent_sets, 'iatas': suggestion }
+    with open('./data/airports_lookup.json') as data_file:
+        airports = json.load(data_file)
+        print suggestion_iatas
+        for iata in suggestion_iatas:
+            if iata in airports:
+                airport = airports[iata]
+                sug = {'iata': iata, 'name': airport['name'], 'country': airport['country']}
+                suggestions.append(sug)
+
+    return { 'relevant_frequent_sets': relevant_frequent_sets, 'airports': suggestions }
